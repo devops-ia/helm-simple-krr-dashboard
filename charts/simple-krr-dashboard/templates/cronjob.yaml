@@ -1,0 +1,118 @@
+{{- if .Values.job.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: get-krr-report
+  annotations:
+    {{- with .Values.job.annotations }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  labels:
+    {{- include "simple-krr-dashboard.labels" . | nindent 4 }}
+    {{- with .Values.job.labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  schedule: {{ .Values.job.schedule | quote }}
+  concurrencyPolicy: {{ .Values.job.concurrencyPolicy | quote }}
+  successfulJobsHistoryLimit: {{ .Values.job.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.job.failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      completions: {{ .Values.job.completions }}
+      parallelism: {{ .Values.job.parallelism }}
+      completionMode: {{ .Values.job.completionMode | quote }}
+      backoffLimit: {{ .Values.job.backoffLimit }}
+      backoffLimitPerIndex: {{ .Values.job.backoffLimitPerIndex }}
+      {{- if .Values.job.maxFailedIndexes }}
+      maxFailedIndexes: {{ .Values.job.maxFailedIndexes }}
+      {{- end }}
+      template:
+        metadata:
+          {{- with .Values.job.podAnnotations }}
+          annotations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          labels:
+            {{- include "simple-krr-dashboard.selectorLabels" . | nindent 12 }}
+            {{- with .Values.podLabels }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+        spec:
+          serviceAccountName: {{ include "simple-krr-dashboard.serviceAccountName" . }}
+          imagePullSecrets:
+            {{- toYaml .Values.job.imagePullSecrets | nindent 12 }}
+          restartPolicy: {{ .Values.job.restartPolicy | quote }}
+          containers:
+          - name: krr
+            image: "{{ .Values.job.image.repository }}:{{ .Values.job.image.tag | default "latest" }}"
+            imagePullPolicy: {{ .Values.job.image.pullPolicy | quote }}
+            {{- if .Values.job.args }}
+            args:
+              {{- toYaml .Values.job.args | nindent 12 }}
+            {{- else }}
+            args:
+              - |
+                apt update && \
+                apt install -y curl --no-install-recommends && \
+                {{- if eq .Values.job.kubectlVersion "stable" }}
+                curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
+                {{- else }}
+                curl -LO "https://dl.k8s.io/release/{{ .Values.job.kubectlVersion }}/bin/linux/amd64/kubectl" && \
+                {{- end }}
+                chmod +x kubectl && \
+                mv ./kubectl /usr/local/bin/kubectl && \
+                python krr.py simple --fileoutput report.table.csv --use-oomkill-data --formatter csv && \
+                DASHBOARD_POD=$(kubectl -n {{ .Release.Namespace }} get pods -l app.kubernetes.io/name={{ include "simple-krr-dashboard.fullname" . }} -l helm.sh/chart={{ .Chart.Name }}-{{ .Chart.Version }} -o jsonpath='{.items[0].metadata.name}') && \
+                grep -v "get-krr-report" report.table.csv > report.table.csv.tmp && \
+                kubectl -n {{ .Release.Namespace }} cp report.table.csv.tmp $DASHBOARD_POD:{{ .Values.env.KUBERNETES_DASHBOARD_CSV_PATH | default "/reports/report.table.csv" }}
+            {{- end }}
+            {{- with .Values.job.command }}
+            command:
+              {{- toYaml . | nindent 12 }}
+            {{- end }}
+            env:
+              {{- $envList := dict -}}
+              {{- if .Values.job.envFromSecrets }}
+              {{- range $key, $value := .Values.job.envFromSecrets }}
+              - name: {{ $key }}
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ $value.name }}
+                    key: {{ $value.key | default $key }}
+              {{- $_ := set $envList $key true }}
+              {{- end }}
+              {{- end }}
+              {{- if .Values.job.env }}
+              {{- range $key, $value := .Values.job.env }}
+              {{- if not (hasKey $envList $key) }}
+              - name: {{ $key }}
+                value: {{ $value | quote }}
+              {{- $_ := set $envList $key true }}
+              {{- end }}
+              {{- end }}
+              {{- end }}
+            resources:
+              {{- toYaml .Values.job.resources | nindent 14 }}
+            {{- with .Values.job.volumeMounts }}
+            volumeMounts:
+              {{- toYaml . | nindent 14 }}
+            {{- end }}
+          terminationGracePeriodSeconds: {{ .Values.job.terminationGracePeriodSeconds }}
+          {{- with .Values.job.volumes }}
+          volumes:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.job.nodeSelector }}
+          nodeSelector:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.job.affinity }}
+          affinity:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.job.tolerations }}
+          tolerations:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+{{- end }}

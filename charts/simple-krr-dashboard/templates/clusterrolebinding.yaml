@@ -1,0 +1,16 @@
+{{- if .Values.serviceAccount.create -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ include "simple-krr-dashboard.serviceAccountName" . }}
+  labels:
+    {{- include "simple-krr-dashboard.labels" . | nindent 4 }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ include "simple-krr-dashboard.serviceAccountName" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "simple-krr-dashboard.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace }}
+{{- end }}

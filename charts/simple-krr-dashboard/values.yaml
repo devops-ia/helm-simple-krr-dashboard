@@ -1,0 +1,487 @@
+# Default values for helm-simple-krr-dashboard
+# This is a YAML-formatted file
+# Declare variables to be passed into your templates
+
+# -- Number of replicas
+# Specifies the number of replicas for the service
+replicaCount: 1
+
+# -- Image registry
+# The image configuration for the base service
+image:
+  # The repository of the image
+  repository: ghcr.io/devops-ia/simple-krr-dashboard
+  # The pull policy for the image
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion
+  tag: ""
+
+# -- String to partially override simple-krr-dashboard.fullname template (will maintain the release name)
+nameOverride: ""
+
+# -- String to fully override simple-krr-dashboard.fullname template
+fullnameOverride: ""
+
+# -- Docker registry secret names as an array
+imagePullSecrets: []
+  # - name: my-secret-name
+
+# -- Enable creation of ServiceAccount
+# </br> Ref: https://kubernetes.io/docs/concepts/security/service-accounts/
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# -- Enable or disable test connection
+testConnection:
+  # Specifies whether a test connection should be created
+  enabled: false
+  # The repository of the image
+  repository: busybox
+  # Overrides the image tag whose default is the chart appVersion
+  tag: ""
+
+# -- Environment variables to configure application
+# </br> Ref: https://github.com/devops-ia/simple-krr-dashboard?tab=readme-ov-file#environment-variables
+env: {}
+  # APP_NAME: "Simple KRR Dashboard"
+  # KUBERNETES_CLUSTER_NAME: None
+  # KUBERNETES_DASHBOARD_CSV_PATH: "/reports/report.table.csv"
+  # LOG_FORMAT: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  # LOG_LEVEL: INFO
+
+# -- Variables from configMap
+envFromConfigMap: {}
+  # MY_VARIABLE:
+  #  name: <name-configmap>
+  #  key: key
+
+# -- Variables from secrets
+envFromSecrets: {}
+  # MY_VARIABLE:
+  #  name: <name-secret>
+  #  key: secret_key
+
+# -- Variables from files managed by you
+# </br> Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/#configure-all-key-value-pairs-in-a-configmap-as-container-environment-variables
+envFromFiles: []
+  # - secretRef:
+  #     name: <name-secret>
+  # - configMapRef:
+  #     name: <name-configmap>
+
+# -- Secrets values to create credentials and reference by envFromSecrets
+# Generate Secret with following name: <release-name>-<name>
+# </br> Ref: https://kubernetes.io/docs/concepts/configuration/secret/
+secrets: []
+  # - name: secret-name
+  #   data:
+  #     my.key: |-
+  #       my-content
+  #     my_var: my-value
+
+# -- ConfigMap values to create configuration files
+# Generate ConfigMap with following name: <release-name>-<name>
+# </br> Ref: https://kubernetes.io/docs/concepts/configuration/configmap/
+configMaps: {}
+  # - name: configmap-name
+  #   data:
+  #     my.key: |-
+  #       my-content
+  #     my_var: my-value
+
+# -- Configure additional containers
+# </br> Ref: https://kubernetes.io/docs/concepts/workloads/pods/init-containers/
+initContainers: []
+  # - name: my-container
+  #   image: busybox
+  #   command: ['sh', '-c', 'echo "Hello, World!"']
+
+# -- Configure args
+# </br> Ref: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/
+args: []
+  # - -c
+  # - echo "Hello, World!"
+
+# -- Configure command
+# </br> Ref: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/
+command: []
+  # - echo
+  # - "Hello, World!"
+
+# -- Kubernetes service to expose Pod
+# </br> Ref: https://kubernetes.io/docs/concepts/services-networking/service/
+service:
+  # -- Kubernetes Service type. Allowed values: NodePort, LoadBalancer or ClusterIP
+  type: ClusterIP
+  # -- Kubernetes Service port
+  port: 8080
+  # -- Kubernetes Service health check path
+  # healthPath: ""
+  # -- NodePort port (only when type is NodePort)
+  # nodePort: 32000
+  # -- Pod expose port
+  # targetPort: 8080
+
+# -- NetworkPolicy configuration
+# </br> Ref: https://kubernetes.io/docs/concepts/services-networking/network-policies/
+networkPolicy:
+  # -- Enable or disable NetworkPolicy
+  enabled: false
+  # -- Policy types
+  policyTypes: []
+    # - Ingress
+    # - Egress
+  ingress: []
+    # - from:
+    #   - ipBlock:
+    #       cidr: 172.17.0.0/16
+    #       except:
+    #       - 172.17.1.0/24
+    #   - namespaceSelector:
+    #       matchLabels:
+    #         project: myproject
+    #   - podSelector:
+    #       matchLabels:
+    #         role: frontend
+    #   ports:
+    #   - protocol: TCP
+    #     port: 6379
+  egress: []
+    # - to:
+    #   - ipBlock:
+    #       cidr: 10.0.0.0/24
+    #   ports:
+    #   - protocol: TCP
+    #     port: 5978
+
+# -- Configure lifecycle hooks
+# </br> Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/
+# </br> Ref: https://learnk8s.io/graceful-shutdown
+lifecycle: {}
+  # preStop:
+  #   exec:
+  #     command: ["sh", "-c", "sleep 10"]
+
+# -- Configure Pod termination grace period
+# </br> Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination
+terminationGracePeriodSeconds: 30
+
+# -- Configure liveness checker
+# </br> Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-startup-probes
+livenessProbe:
+  enabled: false
+  failureThreshold: 3
+  initialDelaySeconds: 180
+  periodSeconds: 10
+  successThreshold: 1
+  timeoutSeconds: 5
+
+# -- Custom livenessProbe
+livenessProbeCustom: {}
+  # httpGet:
+  #   path: /dashboard
+  #   port: 4000
+  # failureThreshold: 3
+  # initialDelaySeconds: 200
+  # periodSeconds: 30
+  # successThreshold: 1
+  # timeoutSeconds: 5
+
+# -- Configure readinessProbe checker
+# </br> Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-startup-probes
+readinessProbe:
+  enabled: false
+  failureThreshold: 3
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  successThreshold: 1
+  timeoutSeconds: 1
+
+# -- Custom readinessProbe
+readinessProbeCustom: {}
+  # httpGet:
+  #   path: /dashboard
+  #   port: 4000
+  # failureThreshold: 3
+  # initialDelaySeconds: 200
+  # periodSeconds: 30
+  # successThreshold: 1
+  # timeoutSeconds: 5
+
+# -- Configure startupProbe checker
+# </br> Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-startup-probes
+startupProbe:
+  enabled: false
+  failureThreshold: 30
+  initialDelaySeconds: 180
+  periodSeconds: 10
+  successThreshold: 1
+  timeoutSeconds: 5
+
+# -- Custom startupProbe
+startupProbeCustom: {}
+  # httpGet:
+  #   path: /dashboard
+  #   port: 4000
+  # failureThreshold: 3
+  # initialDelaySeconds: 200
+  # periodSeconds: 30
+  # successThreshold: 1
+  # timeoutSeconds: 5
+
+# -- Configure annotations on Deployment
+annotations: {}
+
+# -- Configure labels on Deployment
+labels: {}
+
+# -- Configure annotations on Pods
+podAnnotations: {}
+
+# -- Configure labels on Pods
+podLabels: {}
+
+# -- Defines privilege and access control settings for a Pod
+# </br> Ref: https://kubernetes.io/docs/concepts/security/pod-security-standards/
+# </br> Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+podSecurityContext: {}
+  # fsGroup: 2000
+
+# -- Defines privilege and access control settings for a Container
+# </br> Ref: https://kubernetes.io/docs/concepts/security/pod-security-standards/
+# </br> Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+# -- Ingress configuration to expose app
+# </br> Ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+# -- Resources limits and requested
+# </br> Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+resources: {}
+  # limits:
+  #   cpu: "1500m"
+  #   memory: 2048Mi
+  # requests:
+  #   cpu: 1
+  #   memory: 256Mi
+
+# -- Pod Disruption Budget
+# </br> Ref: https://kubernetes.io/docs/reference/kubernetes-api/policy-resources/pod-disruption-budget-v1/
+podDisruptionBudget:
+  enabled: false
+  maxUnavailable: 1
+  minAvailable:
+
+# -- Autoscaling with CPU or memory utilization percentage
+# </br> Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+# -- Additional volumes on the output Deployment definition
+# </br> Ref: https://kubernetes.io/docs/concepts/storage/volumes/
+# </br> Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/
+# </br> Ref: https://kubernetes.io/docs/tasks/inject-data-application/distribute-credentials-secure/#create-a-pod-that-has-access-to-the-secret-data-through-a-volume
+volumes: []
+# - name: foo
+#   secret:
+#     secretName: mysecret
+#     optional: false
+
+# -- Additional volumeMounts on the output Deployment definition
+volumeMounts: []
+# - name: foo
+#   mountPath: "/etc/foo"
+#   readOnly: true
+
+# -- Persistent Volume configuration
+# </br> Ref: https://kubernetes.io/docs/concepts/storage/persistent-volumes/
+persistentVolume:
+  # -- Enable or disable persistence
+  enabled: false
+
+  # -- Persistent Volume access modes
+  # Must match those of existing PV or dynamic provisioner
+  # </br> Ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+  accessModes:
+    - ReadWriteOnce
+
+  # -- Persistent Volume annotations
+  annotations: {}
+
+  # -- Persistent Volume labels
+  labels: {}
+
+  # -- Persistent Volume size
+  size: 8Gi
+
+  # -- Persistent Volume Storage Class
+  # If defined, storageClassName: <storageClass>
+  # If set to "-", storageClassName: "", which disables dynamic provisioning
+  # If undefined (the default) or set to null, no storageClassName spec is
+  #   set, choosing the default provisioner.  (gp2 on AWS, standard on
+  #   GKE, AWS & OpenStack)
+  storageClass: ""
+
+  # -- Persistent Volume Binding Mode
+  # If defined, volumeBindingMode: <volumeBindingMode>
+  # If undefined (the default) or set to null, no volumeBindingMode spec is
+  # set, choosing the default mode.
+  volumeBindingMode: ""
+
+  # -- Persistent Volume Claim Selector
+  # Useful if Persistent Volumes have been provisioned in advance
+  # </br> Ref: https://kubernetes.io/docs/concepts/storage/persistent-volumes/#selector
+  selector: {}
+    # matchLabels:
+    #   release: "stable"
+    # matchExpressions:
+    #   - { key: environment, operator: In, values: [ dev ] }
+
+  # -- Persistent Volume Name
+  # Useful if Persistent Volumes have been provisioned in advance and you want to use a specific one
+  volumeName: ""
+
+# -- Node labels for pod assignment
+# </br> Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector
+nodeSelector: {}
+
+# -- Tolerations for pod assignment
+# </br> Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+tolerations: []
+
+# -- Affinity for pod assignment
+# </br> Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+affinity: {}
+
+# -- Control how Pods are spread across your cluster
+# </br> Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/#example-multiple-topologyspreadconstraints
+topologySpreadConstraints: []
+# - maxSkew: 1
+#   topologyKey: zone
+#   whenUnsatisfied: DoNotSchedule
+
+# -- CronJob configuration
+# </br> Ref: https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/
+job:
+  # -- Enable or disable the cronjob
+  enabled: true
+
+  # -- The schedule in Cron format
+  schedule: "0 0 * * *"
+
+  # -- Version of kubectl to install (use "stable" for latest stable version)
+  kubectlVersion: "stable"
+
+  # -- Concurrency policy for the cronjob
+  concurrencyPolicy: "Forbid"
+
+  # -- Number of successful jobs to keep
+  successfulJobsHistoryLimit: 1
+
+  # -- Number of failed jobs to keep
+  failedJobsHistoryLimit: 1
+
+  # -- Number of completions required for the job
+  completions: 1
+
+  # -- Number of parallel jobs
+  parallelism: 1
+
+  # -- Completion mode for the job
+  completionMode: "Indexed"
+
+  # -- Number of retries before marking job as failed
+  backoffLimit: 1
+
+  # -- Number of retries per index before marking job as failed
+  backoffLimitPerIndex: 1
+
+  # -- Maximum number of failed indexes
+  maxFailedIndexes: 1
+
+  # -- Restart policy for the job
+  restartPolicy: "Never"
+
+  # -- Termination grace period in seconds
+  terminationGracePeriodSeconds: 30
+
+  # -- Image configuration for the job
+  image:
+    repository: robustadev/krr
+    tag: v1.23.0
+    pullPolicy: IfNotPresent
+
+  # -- Arguments for the job container
+  args: []
+
+  # -- Command for the job container
+  command: ["/bin/bash", "-c"]
+
+  # -- Environment variables for the job
+  env: {}
+
+  # -- Environment variables from secrets
+  envFromSecrets: {}
+
+  # -- Resource limits and requests for the job
+  resources: {}
+
+  # -- Volume mounts for the job
+  volumeMounts: []
+
+  # -- Volumes for the job
+  volumes: []
+
+  # -- Node selector for the job
+  nodeSelector: {}
+
+  # -- Tolerations for the job
+  tolerations: []
+
+  # -- Affinity for the job
+  affinity: {}
+
+  # -- Annotations for the job
+  annotations: {}
+
+  # -- Labels for the job
+  labels: {}
+
+  # -- Pod annotations for the job
+  podAnnotations: {}
+
+  # -- Pod labels for the job
+  podLabels: {}

@@ -1,0 +1,73 @@
+name: Check Simple KRR Dashboard new releases
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  check-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get current release
+        id: current_release
+        run: |
+          current_release=$(grep appVersion charts/simple-krr-dashboard/Chart.yaml | awk '{ print $2 }')
+          echo "current_release=$current_release" >> $GITHUB_OUTPUT
+
+      - name: Install updatecli
+        uses: updatecli/updatecli-action@v2
+
+      - name: Update dependencies
+        run: |
+          updatecli apply --config .github/updatecli/helm.yaml --commit=false
+
+      - name: Get latest release
+        id: latest_release
+        run: |
+          latest_release=$(grep appVersion charts/simple-krr-dashboard/Chart.yaml | awk '{ print $2 }')
+          echo "latest_release=$latest_release" >> $GITHUB_OUTPUT
+
+      - name: Check if release changed
+        id: check_changes
+        run: |
+          if [ ${{ steps.latest_release.outputs.latest_release }} != ${{ steps.current_release.outputs.current_release }} ]; then
+            echo "release_changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update README.md Helm Chart
+        if: steps.check_changes.outputs.release_changed == 'true'
+        uses: losisin/helm-docs-github-action@v1
+        with:
+          chart-search-root: charts/simple-krr-dashboard
+
+      - name: Clean tag release for Simple KRR Dashboard
+        id: clean_tag_release
+        if: steps.check_changes.outputs.release_changed == 'true'
+        run: |
+          clean_version_tag=$(echo ${{ steps.latest_release.outputs.latest_release }})
+          echo "clean_version_tag=$clean_version_tag" >> $GITHUB_OUTPUT
+
+      - name: Create PR with changes
+        if: steps.check_changes.outputs.release_changed == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.PAT_GITHUB }}
+          commit-message: "chore: update Simple KRR Dashboard version to ${{ steps.latest_release.outputs.latest_release }}"
+          signoff: false
+          branch: chore/upgrade-simple-krr-dashboard-${{ steps.latest_release.outputs.latest_release }}
+          delete-branch: true
+          title: '[simple-krr-dashboard] new release: ${{ steps.latest_release.outputs.latest_release }}'
+          body: |
+            Simple KRR Dashboard version:
+            - :information_source: Current: `${{ steps.current_release.outputs.current_release }}`
+            - :up: Upgrade: `${{ steps.latest_release.outputs.latest_release }}`
+
+            Changelog: https://github.com/devops-ia/simple-krr-dashboard/releases/tag/${{ steps.clean_tag_release.outputs.clean_version_tag }}
+          labels: |
+            auto-pr-bump-version

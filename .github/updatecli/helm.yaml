@@ -1,0 +1,33 @@
+sources:
+  simple-krr-dashboard:
+    kind: dockerimage
+    spec:
+      image: devopsiaci/simple-krr-dashboard
+      architecture: linux/amd64
+      versionfilter:
+        kind: semver
+  krr:
+    kind: dockerimage
+    spec:
+      image: robustadev/krr
+      architecture: linux/amd64
+      versionfilter:
+        kind: semver
+conditions: {}
+targets:
+  simple-krr-dashboard-helm:
+    name: bump simple-krr-dashboard helm chart
+    kind: helmchart
+    spec:
+      name: charts/simple-krr-dashboard
+      file: Chart.yaml
+      key: $.appVersion
+      versionincrement: patch
+    sourceid: simple-krr-dashboard
+  krr-helm:
+    name: bump krr version helm chart
+    kind: yaml
+    spec:
+      file: charts/simple-krr-dashboard/values.yaml
+      key: $.job.image.tag
+    sourceid: krr

@@ -1,0 +1,233 @@
+replicaCount: 2
+
+image:
+  repository: ghcr.io/devops-ia/simple-krr-dashboard
+  pullPolicy: Always
+  tag: "latest"
+
+nameOverride: "ci-krr"
+fullnameOverride: "ci-simple-krr-dashboard"
+
+imagePullSecrets:
+  - name: ci-registry-secret
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations:
+    eks.amazonaws.com/role-arn: "arn:aws:iam::123456789012:role/ci-simple-krr-dashboard"
+  name: "ci-krr-sa"
+
+testConnection:
+  enabled: true
+  repository: busybox
+  tag: "latest"
+
+env:
+  DEBUG: true
+  LOG_LEVEL: "DEBUG"
+  ALLOWED_HOSTS: "*"
+  APP_NAME: "Simple KRR Dashboard CI"
+  AUTO_RELOAD_ENABLED: true
+  AUTO_RELOAD_INTERVAL: 300
+  CACHE_ENABLED: true
+  CACHE_TTL: 300
+  CORS_ORIGINS: "*"
+  KUBERNETES_CLUSTER_NAME: "ci-cluster"
+  LOG_FORMAT: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+envFromConfigMap:
+  KUBERNETES_CONFIG:
+    name: kubernetes-config
+    key: config
+
+envFromSecrets:
+  KUBERNETES_TOKEN:
+    name: kubernetes-secrets
+    key: token
+
+envFromFiles: []
+
+secrets:
+  - name: kubernetes-credentials
+    data:
+      token: test-token
+      ca.crt: test-ca-cert
+
+initContainers:
+  - name: wait-for-kubernetes
+    image: busybox
+    command: ['sh', '-c', 'until nc -z kubernetes.default.svc.cluster.local 443; do echo waiting for kubernetes; sleep 2; done;']
+
+args: []
+
+command: []
+
+service:
+  type: ClusterIP
+  port: 8501
+  targetPort: 8501
+  healthPath: "/health"
+
+networkPolicy:
+  enabled: true
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: monitoring
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 10.0.0.0/8
+
+lifecycle:
+  preStop:
+    exec:
+      command: ["sh", "-c", "sleep 10"]
+
+terminationGracePeriodSeconds: 60
+
+livenessProbe:
+  enabled: true
+  failureThreshold: 3
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  successThreshold: 1
+  timeoutSeconds: 5
+
+livenessProbeCustom: {}
+
+readinessProbe:
+  enabled: true
+  failureThreshold: 3
+  initialDelaySeconds: 20
+  periodSeconds: 10
+  successThreshold: 1
+  timeoutSeconds: 3
+
+readinessProbeCustom: {}
+
+startupProbe:
+  enabled: true
+  failureThreshold: 30
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  successThreshold: 1
+  timeoutSeconds: 5
+
+startupProbeCustom: {}
+
+annotations: {}
+
+labels: {}
+
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8501"
+
+podLabels:
+  environment: "ci"
+  app-type: "krr-dashboard"
+
+podSecurityContext:
+  fsGroup: 1000
+
+securityContext:
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  hosts:
+    - host: simple-krr-dashboard-ci.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: simple-krr-dashboard-tls
+      hosts:
+        - simple-krr-dashboard-ci.local
+
+resources:
+  limits:
+    cpu: "2"
+    memory: 2Gi
+  requests:
+    cpu: "500m"
+    memory: 1Gi
+
+podDisruptionBudget:
+  enabled: true
+  maxUnavailable: 1
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+volumes:
+  - name: config
+    configMap:
+      name: simple-krr-dashboard-config
+  - name: logs
+    emptyDir: {}
+
+volumeMounts:
+  - name: config
+    mountPath: "/config"
+    readOnly: true
+  - name: logs
+    mountPath: "/var/log/simple-krr-dashboard"
+
+nodeSelector:
+  kubernetes.io/os: linux
+  node-type: monitoring
+
+tolerations:
+  - key: "monitoring"
+    operator: "Equal"
+    value: "true"
+    effect: "NoSchedule"
+
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/os
+              operator: In
+              values:
+                - linux
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - simple-krr-dashboard
+          topologyKey: kubernetes.io/hostname
+
+topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: topology.kubernetes.io/zone
+    whenUnsatisfiable: DoNotSchedule
+    labelSelector:
+      matchLabels:
+        app.kubernetes.io/name: simple-krr-dashboard

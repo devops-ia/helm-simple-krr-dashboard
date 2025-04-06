@@ -1,0 +1,17 @@
+{{ if .Values.testConnection.enabled }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "simple-krr-dashboard.fullname" . }}-test-connection"
+  labels:
+    {{- include "simple-krr-dashboard.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: {{ .Values.testConnection.repository }}:{{ .Values.testConnection.tag | default "latest" }}
+      command: ['wget']
+      args: ['{{ include "simple-krr-dashboard.fullname" . }}:{{ .Values.service.port }}']
+  restartPolicy: Never
+{{ end }}

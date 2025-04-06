@@ -1,0 +1,91 @@
+# High Availability Configuration Example
+# This example demonstrates a HA setup with:
+# - Multiple replicas
+# - Anti-affinity rules
+# - Resource limits
+# - Load balancer service
+# - Advanced probes configuration
+# - Pod disruption budget
+# - Autoscaling
+
+replicaCount: 3
+
+image:
+  repository: ghcr.io/devops-ia/simple-krr-dashboard
+  tag: "latest"
+  pullPolicy: Always
+
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+    - labelSelector:
+        matchExpressions:
+        - key: app.kubernetes.io/name
+          operator: In
+          values:
+          - simple-krr-dashboard
+      topologyKey: "kubernetes.io/hostname"
+
+resources:
+  limits:
+    cpu: 2000m
+    memory: 2Gi
+  requests:
+    cpu: 1000m
+    memory: 1Gi
+
+service:
+  type: LoadBalancer
+  port: 8501
+  healthPath: "/health"
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: nlb
+
+podDisruptionBudget:
+  enabled: true
+  maxUnavailable: 1
+  minAvailable: 2
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 180
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
+
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 1
+  failureThreshold: 3
+  successThreshold: 1
+
+startupProbe:
+  enabled: true
+  initialDelaySeconds: 180
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 30
+  successThreshold: 1
+
+env:
+  ALLOWED_HOSTS: "*"
+  APP_NAME: "Simple KRR Dashboard"
+  AUTO_RELOAD_ENABLED: true
+  AUTO_RELOAD_INTERVAL: 300
+  CACHE_ENABLED: true
+  CACHE_TTL: 300
+  CORS_ORIGINS: "*"
+  DEBUG: false
+  KUBERNETES_CLUSTER_NAME: "my-cluster"
+  LOG_LEVEL: INFO
+
+terminationGracePeriodSeconds: 60

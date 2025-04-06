@@ -1,0 +1,62 @@
+# Basic Configuration Example
+# This example shows a minimal configuration for Simple KRR Dashboard with:
+# - Basic resource settings
+# - Simple service configuration
+# - Default probes enabled
+# - Single replica deployment
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/devops-ia/simple-krr-dashboard
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 8501
+  healthPath: "/health"
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 500m
+    memory: 512Mi
+
+env:
+  ALLOWED_HOSTS: "*"
+  APP_NAME: "Simple KRR Dashboard"
+  AUTO_RELOAD_ENABLED: true
+  AUTO_RELOAD_INTERVAL: 300
+  CACHE_ENABLED: true
+  CACHE_TTL: 300
+  CORS_ORIGINS: "*"
+  DEBUG: false
+  KUBERNETES_CLUSTER_NAME: "my-cluster"
+  LOG_LEVEL: INFO
+
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 180
+  periodSeconds: 10
+  failureThreshold: 3
+  successThreshold: 1
+  timeoutSeconds: 5
+
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  failureThreshold: 3
+  successThreshold: 1
+  timeoutSeconds: 1
+
+startupProbe:
+  enabled: true
+  initialDelaySeconds: 180
+  periodSeconds: 10
+  failureThreshold: 30
+  successThreshold: 1
+  timeoutSeconds: 5

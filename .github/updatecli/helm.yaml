@@ -1,0 +1,17 @@
+sources:
+  simple-krr-dashboard:
+    kind: dockerimage
+    spec:
+      image: devopsiaci/simple-krr-dashboard
+      architecture: linux/amd64
+conditions: {}
+targets:
+  simple-krr-dashboard-helm:
+    name: bump simple-krr-dashboard helm chart
+    kind: helmchart
+    spec:
+      name: charts/simple-krr-dashboard
+      file: Chart.yaml
+      key: $.appVersion
+      versionincrement: patch
+    sourceid: simple-krr-dashboard

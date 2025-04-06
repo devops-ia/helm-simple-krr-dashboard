@@ -1,0 +1,60 @@
+# {{ template "chart.name" . }}
+
+{{ template "chart.description" . }}
+
+{{ template "chart.maintainersSection" . }}
+
+## Prerequisites
+
+* Helm 3+
+
+{{ template "chart.requirementsSection" . }}
+
+## Add repository
+
+```console
+helm repo add simple-krr-dashboard https://devops-ia.github.io/helm-simple-krr-dashboard
+helm repo update
+```
+
+## Install Helm chart (repository mode)
+
+```console
+helm install [RELEASE_NAME] simple-krr-dashboard/{{ template "chart.name" . }}
+```
+
+This install all the Kubernetes components associated with the chart and creates the release.
+
+_See [helm install](https://helm.sh/docs/helm/helm_install/) for command documentation._
+
+## Install Helm chart (OCI mode)
+
+Charts are also available in OCI format. The list of available charts can be found [here](https://github.com/devops-ia/helm-simple-krr-dashboard/pkgs/container/helm-simple-krr-dashboard%2Fsimple-krr-dashboard).
+
+```console
+helm install [RELEASE_NAME] oci://ghcr.io/devops-ia/helm-simple-krr-dashboard/simple-krr-dashboard --version=[version]
+```
+
+## Uninstall Helm chart
+
+```console
+helm uninstall [RELEASE_NAME]
+```
+
+This removes all the Kubernetes components associated with the chart and deletes the release.
+
+_See [helm uninstall](https://helm.sh/docs/helm/helm_uninstall/) for command documentation._
+
+## Examples
+
+See [examples](./examples) directory.
+
+## Configuration
+
+See [Customizing the chart before installing](https://helm.sh/docs/intro/using_helm/#customizing-the-chart-before-installing). To see all configurable options with comments:
+
+```console
+helm show values simple-krr-dashboard/{{ template "chart.name" . }}
+```
+
+{{ template "chart.valuesSection" . }}

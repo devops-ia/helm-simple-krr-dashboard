@@ -1,0 +1,17 @@
+apiVersion: v2
+name: simple-krr-dashboard
+description: A Helm chart to deploy Simple KRR Dashboard
+type: application
+maintainers:
+  - name: ialejandro
+    email: hello@ialejandro.rocks
+    url: https://ialejandro.rocks
+sources:
+  - https://github.com/linkedin/simple-krr-dashboard
+version: 0.0.1 # Change with CI/CD
+appVersion: 1.0.0
+home: https://github.com/devops-ia/helm-simple-krr-dashboard
+keywords:
+  - simple-krr-dashboard
+  - krr
+  - kubernetes

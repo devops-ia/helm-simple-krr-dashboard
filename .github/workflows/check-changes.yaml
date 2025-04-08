@@ -50,8 +50,8 @@ jobs:
         id: clean_tag_release
         if: steps.check_changes.outputs.release_changed == 'true'
         run: |
-          cc_clean_version_tag=$(echo ${{ steps.latest_release.outputs.latest_release }} | grep -oP '(?<=cc)\d+\.\d+\.\d+')
-          echo "cc_clean_version_tag=$cc_clean_version_tag" >> $GITHUB_OUTPUT
+          clean_version_tag=$(echo ${{ steps.latest_release.outputs.latest_release }})
+          echo "clean_version_tag=$clean_version_tag" >> $GITHUB_OUTPUT
 
       - name: Create PR with changes
         if: steps.check_changes.outputs.release_changed == 'true'
@@ -68,6 +68,6 @@ jobs:
             - :information_source: Current: `${{ steps.current_release.outputs.current_release }}`
             - :up: Upgrade: `${{ steps.latest_release.outputs.latest_release }}`
 
-            Changelog: https://github.com/linkedin/simple-krr-dashboard/releases/tag/${{ steps.clean_tag_release.outputs.cc_clean_version_tag }}
+            Changelog: https://github.com/devops-ia/simple-krr-dashboard/releases/tag/${{ steps.clean_tag_release.outputs.clean_version_tag }}
           labels: |
             auto-pr-bump-version

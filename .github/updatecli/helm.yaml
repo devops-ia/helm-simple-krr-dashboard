@@ -4,6 +4,8 @@ sources:
     spec:
       image: devopsiaci/simple-krr-dashboard
       architecture: linux/amd64
+      versionfilter:
+        kind: semver
 conditions: {}
 targets:
   simple-krr-dashboard-helm:

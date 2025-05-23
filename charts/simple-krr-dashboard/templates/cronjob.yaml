@@ -62,7 +62,7 @@ spec:
                 {{- end }}
                 chmod +x kubectl && \
                 mv ./kubectl /usr/local/bin/kubectl && \
-                python krr.py simple --fileoutput report.table.csv --use-oomkill-data --formatter csv && \
+                python krr.py simple --fileoutput report.table.csv --use-oomkill-data --formatter csv {{ .Values.job.krrExtraArguments | default "" }} && \
                 DASHBOARD_POD=$(kubectl -n {{ .Release.Namespace }} get pods -l app.kubernetes.io/name={{ include "simple-krr-dashboard.fullname" . }} -l helm.sh/chart={{ .Chart.Name }}-{{ .Chart.Version }} -o jsonpath='{.items[0].metadata.name}') && \
                 grep -v "get-krr-report" report.table.csv > report.table.csv.tmp && \
                 kubectl -n {{ .Release.Namespace }} cp report.table.csv.tmp $DASHBOARD_POD:{{ .Values.env.KUBERNETES_DASHBOARD_CSV_PATH | default "/reports/report.table.csv" }}

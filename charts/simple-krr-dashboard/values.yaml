@@ -405,6 +405,9 @@ job:
   # -- Version of kubectl to install (use "stable" for latest stable version)
   kubectlVersion: "stable"
 
+  # -- Extra arguments to pass to krr (eg. `--mem-min 32 --allow-hpa --history-duration 720`)
+  krrExtraArguments: ""
+
   # -- Concurrency policy for the cronjob
   concurrencyPolicy: "Forbid"
 

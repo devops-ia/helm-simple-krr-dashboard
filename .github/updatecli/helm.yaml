@@ -22,12 +22,14 @@ targets:
       name: charts/simple-krr-dashboard
       file: Chart.yaml
       key: $.appVersion
-      versionincrement: patch
+      versionincrement: none
     sourceid: simple-krr-dashboard
-  krr-helm:
-    name: bump krr version helm chart
-    kind: yaml
+  simple-krr-helm:
+    name: bump simple-krr-dashboard helm chart
+    kind: helmchart
     spec:
-      file: charts/simple-krr-dashboard/values.yaml
+      name: charts/simple-krr-dashboard
+      file: values.yaml
       key: $.job.image.tag
+      versionincrement: none
     sourceid: krr

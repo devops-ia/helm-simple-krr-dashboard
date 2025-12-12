@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "replicaCount": {
       "type": "integer",
@@ -9,6 +10,7 @@
     "image": {
       "type": "object",
       "description": "Image registry configuration",
+      "additionalProperties": true,
       "properties": {
         "repository": {
           "type": "string",
@@ -16,14 +18,18 @@
         },
         "pullPolicy": {
           "type": "string",
-          "description": "The pull policy for the image",
-          "enum": ["IfNotPresent", "Always", "Never"]
+          "description": "The pull policy for the image"
         },
         "tag": {
           "type": "string",
           "description": "Overrides the image tag whose default is the chart appVersion"
         }
       }
+    },
+    "strategy": {
+      "type": "object",
+      "description": "Configure deployment strategy (RollingUpdate, Recreate)",
+      "additionalProperties": true
     },
     "nameOverride": {
       "type": "string",
@@ -38,16 +44,13 @@
       "description": "Docker registry secret names as an array",
       "items": {
         "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          }
-        }
+        "additionalProperties": true
       }
     },
     "serviceAccount": {
       "type": "object",
       "description": "ServiceAccount configuration",
+      "additionalProperties": true,
       "properties": {
         "create": {
           "type": "boolean",
@@ -59,7 +62,8 @@
         },
         "annotations": {
           "type": "object",
-          "description": "Annotations to add to the service account"
+          "description": "Annotations to add to the service account",
+          "additionalProperties": true
         },
         "name": {
           "type": "string",
@@ -70,6 +74,7 @@
     "testConnection": {
       "type": "object",
       "description": "Test connection configuration",
+      "additionalProperties": true,
       "properties": {
         "enabled": {
           "type": "boolean",
@@ -87,39 +92,25 @@
     },
     "env": {
       "type": "object",
-      "description": "Environment variables to configure application"
+      "description": "Environment variables to configure application",
+      "additionalProperties": true
     },
     "envFromConfigMap": {
       "type": "object",
-      "description": "Variables from configMap"
+      "description": "Variables from configMap",
+      "additionalProperties": true
     },
     "envFromSecrets": {
       "type": "object",
-      "description": "Variables from secrets"
+      "description": "Variables from secrets",
+      "additionalProperties": true
     },
     "envFromFiles": {
       "type": "array",
       "description": "Variables from files managed by you",
       "items": {
         "type": "object",
-        "properties": {
-          "secretRef": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string"
-              }
-            }
-          },
-          "configMapRef": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string"
-              }
-            }
-          }
-        }
+        "additionalProperties": true
       }
     },
     "secrets": {
@@ -127,14 +118,20 @@
       "description": "Secrets values to create credentials",
       "items": {
         "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "data": {
-            "type": "object"
-          }
-        }
+        "additionalProperties": true
+      }
+    },
+    "configMaps": {
+      "type": "object",
+      "description": "ConfigMap values to create configuration files",
+      "additionalProperties": true
+    },
+    "hostAliases": {
+      "type": "array",
+      "description": "Configure hostAliases for pods",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
       }
     },
     "initContainers": {
@@ -142,20 +139,7 @@
       "description": "Configure additional containers",
       "items": {
         "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "image": {
-            "type": "string"
-          },
-          "command": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        }
+        "additionalProperties": true
       }
     },
     "args": {
@@ -175,33 +159,127 @@
     "service": {
       "type": "object",
       "description": "Kubernetes service to expose Pod",
+      "additionalProperties": true,
       "properties": {
         "type": {
           "type": "string",
-          "description": "Kubernetes Service type",
-          "enum": ["NodePort", "LoadBalancer", "ClusterIP"]
+          "description": "Kubernetes Service type (NodePort, LoadBalancer, ClusterIP, ExternalName)"
         },
         "port": {
           "type": "integer",
           "description": "Kubernetes Service port"
         },
-        "healthPath": {
+        "targetPort": {
+          "type": ["integer", "string"],
+          "description": "Pod expose port"
+        },
+        "protocol": {
           "type": "string",
-          "description": "Kubernetes Service health check path"
+          "description": "Protocol for the service port"
+        },
+        "portName": {
+          "type": "string",
+          "description": "Name for the service port"
+        },
+        "appProtocol": {
+          "type": "string",
+          "description": "Application protocol (HTTP, HTTPS, etc.)"
         },
         "nodePort": {
           "type": "integer",
-          "description": "NodePort port (only when type is NodePort)"
+          "description": "NodePort port (only when type is NodePort or LoadBalancer)"
         },
-        "targetPort": {
+        "clusterIP": {
+          "type": "string",
+          "description": "Specific cluster IP (use 'None' for headless service)"
+        },
+        "clusterIPs": {
+          "type": "array",
+          "description": "List of cluster IPs for dual-stack",
+          "items": {
+            "type": "string"
+          }
+        },
+        "externalIPs": {
+          "type": "array",
+          "description": "External IPs for the service",
+          "items": {
+            "type": "string"
+          }
+        },
+        "loadBalancer": {
+          "type": "object",
+          "description": "LoadBalancer specific configuration",
+          "additionalProperties": true
+        },
+        "externalName": {
+          "type": "string",
+          "description": "External name for ExternalName type service"
+        },
+        "externalTrafficPolicy": {
+          "type": "string",
+          "description": "External traffic policy (Local or Cluster)"
+        },
+        "internalTrafficPolicy": {
+          "type": "string",
+          "description": "Internal traffic policy (Local or Cluster)"
+        },
+        "healthCheckNodePort": {
           "type": "integer",
-          "description": "Pod expose port"
+          "description": "Health check node port"
+        },
+        "publishNotReadyAddresses": {
+          "type": "boolean",
+          "description": "Publish not ready addresses"
+        },
+        "sessionAffinity": {
+          "type": "string",
+          "description": "Session affinity (None or ClientIP)"
+        },
+        "sessionAffinityConfig": {
+          "type": "object",
+          "description": "Session affinity configuration",
+          "additionalProperties": true
+        },
+        "ipFamilies": {
+          "type": "array",
+          "description": "IP families (IPv4, IPv6)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ipFamilyPolicy": {
+          "type": "string",
+          "description": "IP family policy (SingleStack, PreferDualStack, RequireDualStack)"
+        },
+        "trafficDistribution": {
+          "type": "string",
+          "description": "Traffic distribution (PreferClose)"
+        },
+        "labels": {
+          "type": "object",
+          "description": "Additional labels for the service",
+          "additionalProperties": true
+        },
+        "annotations": {
+          "type": "object",
+          "description": "Annotations for the service",
+          "additionalProperties": true
+        },
+        "extraPorts": {
+          "type": "array",
+          "description": "Pod extra ports",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
         }
       }
     },
     "networkPolicy": {
       "type": "object",
       "description": "NetworkPolicy configuration",
+      "additionalProperties": true,
       "properties": {
         "enabled": {
           "type": "boolean",
@@ -211,41 +289,31 @@
           "type": "array",
           "description": "Policy types",
           "items": {
-            "type": "string",
-            "enum": ["Ingress", "Egress"]
+            "type": "string"
           }
         },
         "ingress": {
           "type": "array",
-          "description": "Ingress rules"
+          "description": "Ingress rules",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
         },
         "egress": {
           "type": "array",
-          "description": "Egress rules"
+          "description": "Egress rules",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
         }
       }
     },
     "lifecycle": {
       "type": "object",
       "description": "Configure lifecycle hooks",
-      "properties": {
-        "preStop": {
-          "type": "object",
-          "properties": {
-            "exec": {
-              "type": "object",
-              "properties": {
-                "command": {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+      "additionalProperties": true
     },
     "terminationGracePeriodSeconds": {
       "type": "integer",
@@ -254,141 +322,67 @@
     "livenessProbe": {
       "type": "object",
       "description": "Configure liveness checker",
-      "properties": {
-        "enabled": {
-          "type": "boolean"
-        },
-        "failureThreshold": {
-          "type": "integer"
-        },
-        "initialDelaySeconds": {
-          "type": "integer"
-        },
-        "periodSeconds": {
-          "type": "integer"
-        },
-        "successThreshold": {
-          "type": "integer"
-        },
-        "timeoutSeconds": {
-          "type": "integer"
-        }
-      }
+      "additionalProperties": true
     },
     "livenessProbeCustom": {
       "type": "object",
-      "description": "Custom livenessProbe"
+      "description": "Custom livenessProbe",
+      "additionalProperties": true
     },
     "readinessProbe": {
       "type": "object",
       "description": "Configure readinessProbe checker",
-      "properties": {
-        "enabled": {
-          "type": "boolean"
-        },
-        "failureThreshold": {
-          "type": "integer"
-        },
-        "initialDelaySeconds": {
-          "type": "integer"
-        },
-        "periodSeconds": {
-          "type": "integer"
-        },
-        "successThreshold": {
-          "type": "integer"
-        },
-        "timeoutSeconds": {
-          "type": "integer"
-        }
-      }
+      "additionalProperties": true
     },
     "readinessProbeCustom": {
       "type": "object",
-      "description": "Custom readinessProbe"
+      "description": "Custom readinessProbe",
+      "additionalProperties": true
     },
     "startupProbe": {
       "type": "object",
       "description": "Configure startupProbe checker",
-      "properties": {
-        "enabled": {
-          "type": "boolean"
-        },
-        "failureThreshold": {
-          "type": "integer"
-        },
-        "initialDelaySeconds": {
-          "type": "integer"
-        },
-        "periodSeconds": {
-          "type": "integer"
-        },
-        "successThreshold": {
-          "type": "integer"
-        },
-        "timeoutSeconds": {
-          "type": "integer"
-        }
-      }
+      "additionalProperties": true
     },
     "startupProbeCustom": {
       "type": "object",
-      "description": "Custom startupProbe"
+      "description": "Custom startupProbe",
+      "additionalProperties": true
     },
     "annotations": {
       "type": "object",
-      "description": "Configure annotations on Deployment"
+      "description": "Configure annotations on Deployment",
+      "additionalProperties": true
     },
     "labels": {
       "type": "object",
-      "description": "Configure labels on Deployment"
+      "description": "Configure labels on Deployment",
+      "additionalProperties": true
     },
     "podAnnotations": {
       "type": "object",
-      "description": "Configure annotations on Pods"
+      "description": "Configure annotations on Pods",
+      "additionalProperties": true
     },
     "podLabels": {
       "type": "object",
-      "description": "Configure labels on Pods"
+      "description": "Configure labels on Pods",
+      "additionalProperties": true
     },
     "podSecurityContext": {
       "type": "object",
       "description": "Defines privilege and access control settings for a Pod",
-      "properties": {
-        "fsGroup": {
-          "type": "integer"
-        }
-      }
+      "additionalProperties": true
     },
     "securityContext": {
       "type": "object",
       "description": "Defines privilege and access control settings for a Container",
-      "properties": {
-        "capabilities": {
-          "type": "object",
-          "properties": {
-            "drop": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          }
-        },
-        "readOnlyRootFilesystem": {
-          "type": "boolean"
-        },
-        "runAsNonRoot": {
-          "type": "boolean"
-        },
-        "runAsUser": {
-          "type": "integer"
-        }
-      }
+      "additionalProperties": true
     },
     "ingress": {
       "type": "object",
       "description": "Ingress configuration to expose app",
+      "additionalProperties": true,
       "properties": {
         "enabled": {
           "type": "boolean"
@@ -397,48 +391,21 @@
           "type": "string"
         },
         "annotations": {
-          "type": "object"
+          "type": "object",
+          "additionalProperties": true
         },
         "hosts": {
           "type": "array",
           "items": {
             "type": "object",
-            "properties": {
-              "host": {
-                "type": "string"
-              },
-              "paths": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "path": {
-                      "type": "string"
-                    },
-                    "pathType": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
+            "additionalProperties": true
           }
         },
         "tls": {
           "type": "array",
           "items": {
             "type": "object",
-            "properties": {
-              "secretName": {
-                "type": "string"
-              },
-              "hosts": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              }
-            }
+            "additionalProperties": true
           }
         }
       }
@@ -446,88 +413,24 @@
     "resources": {
       "type": "object",
       "description": "Resources limits and requested",
-      "properties": {
-        "limits": {
-          "type": "object",
-          "properties": {
-            "cpu": {
-              "type": "string"
-            },
-            "memory": {
-              "type": "string"
-            }
-          }
-        },
-        "requests": {
-          "type": "object",
-          "properties": {
-            "cpu": {
-              "type": "string"
-            },
-            "memory": {
-              "type": "string"
-            }
-          }
-        }
-      }
+      "additionalProperties": true
     },
     "podDisruptionBudget": {
       "type": "object",
       "description": "Pod Disruption Budget",
-      "properties": {
-        "enabled": {
-          "type": "boolean"
-        },
-        "maxUnavailable": {
-          "type": "integer"
-        },
-        "minAvailable": {
-          "type": ["integer", "null"]
-        }
-      }
+      "additionalProperties": true
     },
     "autoscaling": {
       "type": "object",
       "description": "Autoscaling with CPU or memory utilization percentage",
-      "properties": {
-        "enabled": {
-          "type": "boolean"
-        },
-        "minReplicas": {
-          "type": "integer"
-        },
-        "maxReplicas": {
-          "type": "integer"
-        },
-        "targetCPUUtilizationPercentage": {
-          "type": "integer"
-        },
-        "targetMemoryUtilizationPercentage": {
-          "type": "integer"
-        }
-      }
+      "additionalProperties": true
     },
     "volumes": {
       "type": "array",
       "description": "Additional volumes on the output Deployment definition",
       "items": {
         "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "secret": {
-            "type": "object",
-            "properties": {
-              "secretName": {
-                "type": "string"
-              },
-              "optional": {
-                "type": "boolean"
-              }
-            }
-          }
-        }
+        "additionalProperties": true
       }
     },
     "volumeMounts": {
@@ -535,52 +438,53 @@
       "description": "Additional volumeMounts on the output Deployment definition",
       "items": {
         "type": "object",
-        "properties": {
-          "name": {
-            "type": "string"
-          },
-          "mountPath": {
-            "type": "string"
-          },
-          "readOnly": {
-            "type": "boolean"
-          }
-        }
+        "additionalProperties": true
       }
+    },
+    "persistentVolume": {
+      "type": "object",
+      "description": "Persistent Volume configuration",
+      "additionalProperties": true
     },
     "nodeSelector": {
       "type": "object",
-      "description": "Node labels for pod assignment"
+      "description": "Node labels for pod assignment",
+      "additionalProperties": true
     },
     "tolerations": {
       "type": "array",
-      "description": "Tolerations for pod assignment"
+      "description": "Tolerations for pod assignment",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
     },
     "affinity": {
       "type": "object",
-      "description": "Affinity for pod assignment"
+      "description": "Affinity for pod assignment",
+      "additionalProperties": true
     },
     "topologySpreadConstraints": {
       "type": "array",
       "description": "Control how Pods are spread across your cluster",
       "items": {
         "type": "object",
-        "properties": {
-          "maxSkew": {
-            "type": "integer"
-          },
-          "topologyKey": {
-            "type": "string"
-          },
-          "whenUnsatisfiable": {
-            "type": "string"
-          }
-        }
+        "additionalProperties": true
       }
+    },
+    "dnsConfig": {
+      "type": "object",
+      "description": "Configure DNS",
+      "additionalProperties": true
+    },
+    "dnsPolicy": {
+      "type": "string",
+      "description": "Configure DNS policy (ClusterFirst, Default, ClusterFirstWithHostNet, None)"
     },
     "job": {
       "type": "object",
       "description": "CronJob configuration",
+      "additionalProperties": true,
       "properties": {
         "enabled": {
           "type": "boolean",
@@ -590,18 +494,17 @@
           "type": "string",
           "description": "The schedule in Cron format"
         },
-        "krrVersion": {
+        "krrExtraArguments": {
           "type": "string",
-          "description": "Version of KRR to install"
+          "description": "Extra arguments to pass to krr"
         },
         "kubectlVersion": {
           "type": "string",
-          "description": "Version of kubectl to install (use \"stable\" for latest stable version)"
+          "description": "Version of kubectl to install (use 'stable' for latest stable version)"
         },
         "concurrencyPolicy": {
           "type": "string",
-          "description": "Concurrency policy for the cronjob",
-          "enum": ["Allow", "Forbid", "Replace"]
+          "description": "Concurrency policy for the cronjob"
         },
         "successfulJobsHistoryLimit": {
           "type": "integer",
@@ -621,8 +524,7 @@
         },
         "completionMode": {
           "type": "string",
-          "description": "Completion mode for the job",
-          "enum": ["NonIndexed", "Indexed"]
+          "description": "Completion mode for the job"
         },
         "backoffLimit": {
           "type": "integer",
@@ -638,8 +540,7 @@
         },
         "restartPolicy": {
           "type": "string",
-          "description": "Restart policy for the job",
-          "enum": ["OnFailure", "Never"]
+          "description": "Restart policy for the job"
         },
         "terminationGracePeriodSeconds": {
           "type": "integer",
@@ -648,18 +549,7 @@
         "image": {
           "type": "object",
           "description": "Image configuration for the job",
-          "properties": {
-            "repository": {
-              "type": "string"
-            },
-            "tag": {
-              "type": "string"
-            },
-            "pullPolicy": {
-              "type": "string",
-              "enum": ["IfNotPresent", "Always", "Never"]
-            }
-          }
+          "additionalProperties": true
         },
         "args": {
           "type": "array",
@@ -677,32 +567,38 @@
         },
         "env": {
           "type": "object",
-          "description": "Environment variables for the job"
+          "description": "Environment variables for the job",
+          "additionalProperties": true
+        },
+        "envFromConfigMap": {
+          "type": "object",
+          "description": "Variables from configMap",
+          "additionalProperties": true
         },
         "envFromSecrets": {
           "type": "object",
-          "description": "Environment variables from secrets"
+          "description": "Environment variables from secrets",
+          "additionalProperties": true
+        },
+        "envFromFiles": {
+          "type": "array",
+          "description": "Variables from files managed by you",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
         },
         "resources": {
           "type": "object",
-          "description": "Resource limits and requests for the job"
+          "description": "Resource limits and requests for the job",
+          "additionalProperties": true
         },
         "volumeMounts": {
           "type": "array",
           "description": "Volume mounts for the job",
           "items": {
             "type": "object",
-            "properties": {
-              "name": {
-                "type": "string"
-              },
-              "mountPath": {
-                "type": "string"
-              },
-              "readOnly": {
-                "type": "boolean"
-              }
-            }
+            "additionalProperties": true
           }
         },
         "volumes": {
@@ -710,51 +606,55 @@
           "description": "Volumes for the job",
           "items": {
             "type": "object",
-            "properties": {
-              "name": {
-                "type": "string"
-              },
-              "secret": {
-                "type": "object",
-                "properties": {
-                  "secretName": {
-                    "type": "string"
-                  },
-                  "optional": {
-                    "type": "boolean"
-                  }
-                }
-              }
-            }
+            "additionalProperties": true
           }
         },
         "nodeSelector": {
           "type": "object",
-          "description": "Node selector for the job"
+          "description": "Node selector for the job",
+          "additionalProperties": true
         },
         "tolerations": {
           "type": "array",
-          "description": "Tolerations for the job"
+          "description": "Tolerations for the job",
+          "items": {
+            "type": "object",
+            "additionalProperties": true
+          }
         },
         "affinity": {
           "type": "object",
-          "description": "Affinity for the job"
+          "description": "Affinity for the job",
+          "additionalProperties": true
         },
         "annotations": {
           "type": "object",
-          "description": "Annotations for the job"
+          "description": "Annotations for the job",
+          "additionalProperties": true
         },
         "labels": {
           "type": "object",
-          "description": "Labels for the job"
+          "description": "Labels for the job",
+          "additionalProperties": true
         },
         "podAnnotations": {
           "type": "object",
-          "description": "Pod annotations for the job"
+          "description": "Pod annotations for the job",
+          "additionalProperties": true
         },
         "podLabels": {
           "type": "object",
-          "description": "Pod labels for the job"
+          "description": "Pod labels for the job",
+          "additionalProperties": true
+        },
+        "dnsConfig": {
+          "type": "object",
+          "description": "Configure DNS",
+          "additionalProperties": true
+        },
+        "dnsPolicy": {
+          "type": "string",
+          "description": "Configure DNS policy"
         }
       }
     }

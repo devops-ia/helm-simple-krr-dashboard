@@ -2,7 +2,7 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: get-krr-report
+  name: {{ include "simple-krr-dashboard.fullname" . }}-get-krr-report
   annotations:
     {{- with .Values.job.annotations }}
     {{- toYaml . | nindent 4 }}
@@ -35,7 +35,7 @@ spec:
           {{- end }}
           labels:
             {{- include "simple-krr-dashboard.selectorLabels" . | nindent 12 }}
-            {{- with .Values.podLabels }}
+            {{- with .Values.jobpodLabels }}
             {{- toYaml . | nindent 12 }}
             {{- end }}
         spec:
@@ -71,11 +71,17 @@ spec:
             command:
               {{- toYaml . | nindent 12 }}
             {{- end }}
+            envFrom:
+              {{- if .Values.job.envFromFiles }}
+              {{- tpl (toYaml .Values.job.envFromFiles) . | nindent 12 }}
+              {{- end }}
             env:
+              # Variables from secrets have precedence
               {{- $envList := dict -}}
               {{- if .Values.job.envFromSecrets }}
               {{- range $key, $value := .Values.job.envFromSecrets }}
-              - name: {{ $key }}
+              {{- if not (hasKey $envList $key) }}
+              - name: {{ $key | upper }}
                 valueFrom:
                   secretKeyRef:
                     name: {{ $value.name }}
@@ -83,10 +89,25 @@ spec:
               {{- $_ := set $envList $key true }}
               {{- end }}
               {{- end }}
+              {{- end }}
+              # Variables from configmap have precedence
+              {{- if .Values.job.envFromConfigMap }}
+              {{- range $key, $value := .Values.job.envFromConfigMap }}
+              {{- if not (hasKey $envList $key) }}
+              - name: {{ $key | upper }}
+                valueFrom:
+                  configMapKeyRef:
+                    name: {{ $value.name }}
+                    key: {{ $value.key | default $key }}
+              {{- $_ := set $envList $key true }}
+              {{- end }}
+              {{- end }}
+              {{- end }}
+              # Add variables in plain text if they were not already added from secrets
               {{- if .Values.job.env }}
               {{- range $key, $value := .Values.job.env }}
               {{- if not (hasKey $envList $key) }}
-              - name: {{ $key }}
+              - name: {{ $key | upper }}
                 value: {{ $value | quote }}
               {{- $_ := set $envList $key true }}
               {{- end }}
@@ -114,5 +135,12 @@ spec:
           {{- with .Values.job.tolerations }}
           tolerations:
             {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.job.dnsConfig }}
+          dnsConfig:
+            {{- toYaml . | nindent 8 }}
+          {{- end }}
+          {{- with .Values.job.dnsPolicy }}
+          dnsPolicy: {{ . }}
           {{- end }}
 {{- end }}

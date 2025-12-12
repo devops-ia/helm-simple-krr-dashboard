@@ -1,2 +1,7 @@
+*.gotmpl
+*.md
 *.tgz
 Chart.lock
+ci
+examples/
+values.schema.json

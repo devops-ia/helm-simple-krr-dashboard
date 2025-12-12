@@ -24,7 +24,13 @@ fullnameOverride: ""
 
 # -- Docker registry secret names as an array
 imagePullSecrets: []
-  # - name: my-secret-name
+# - name: my-secret-name
+
+# -- Configure strategy for the deployment
+strategy: {}
+# type: RollingUpdate
+# rollingUpdate:
+#   maxUnavailable: 1
 
 # -- Enable creation of ServiceAccount
 # </br> Ref: https://kubernetes.io/docs/concepts/security/service-accounts/
@@ -51,84 +57,159 @@ testConnection:
 # -- Environment variables to configure application
 # </br> Ref: https://github.com/devops-ia/simple-krr-dashboard?tab=readme-ov-file#environment-variables
 env: {}
-  # APP_NAME: "Simple KRR Dashboard"
-  # KUBERNETES_CLUSTER_NAME: None
-  # KUBERNETES_DASHBOARD_CSV_PATH: "/reports/report.table.csv"
-  # LOG_FORMAT: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-  # LOG_LEVEL: INFO
+# APP_NAME: "Simple KRR Dashboard"
+# KUBERNETES_CLUSTER_NAME: None
+# KUBERNETES_DASHBOARD_CSV_PATH: "/reports/report.table.csv"
+# LOG_FORMAT: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+# LOG_LEVEL: INFO
 
 # -- Variables from configMap
 envFromConfigMap: {}
-  # MY_VARIABLE:
-  #  name: <name-configmap>
-  #  key: key
+# MY_VARIABLE:
+#  name: <name-configmap>
+#  key: key
 
 # -- Variables from secrets
 envFromSecrets: {}
-  # MY_VARIABLE:
-  #  name: <name-secret>
-  #  key: secret_key
+# MY_VARIABLE:
+#  name: <name-secret>
+#  key: secret_key
 
 # -- Variables from files managed by you
 # </br> Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/#configure-all-key-value-pairs-in-a-configmap-as-container-environment-variables
 envFromFiles: []
-  # - secretRef:
-  #     name: <name-secret>
-  # - configMapRef:
-  #     name: <name-configmap>
+# - secretRef:
+#     name: <name-secret>
+# - configMapRef:
+#     name: <name-configmap>
 
 # -- Secrets values to create credentials and reference by envFromSecrets
 # Generate Secret with following name: <release-name>-<name>
 # </br> Ref: https://kubernetes.io/docs/concepts/configuration/secret/
 secrets: []
-  # - name: secret-name
-  #   data:
-  #     my.key: |-
-  #       my-content
-  #     my_var: my-value
+# - name: secret-name
+#   data:
+#     my.key: |-
+#       my-content
+#     my_var: my-value
 
 # -- ConfigMap values to create configuration files
 # Generate ConfigMap with following name: <release-name>-<name>
 # </br> Ref: https://kubernetes.io/docs/concepts/configuration/configmap/
 configMaps: {}
-  # - name: configmap-name
-  #   data:
-  #     my.key: |-
-  #       my-content
-  #     my_var: my-value
+# - name: configmap-name
+#   data:
+#     my.key: |-
+#       my-content
+#     my_var: my-value
 
 # -- Configure additional containers
 # </br> Ref: https://kubernetes.io/docs/concepts/workloads/pods/init-containers/
 initContainers: []
-  # - name: my-container
-  #   image: busybox
-  #   command: ['sh', '-c', 'echo "Hello, World!"']
+# - name: my-container
+#   image: busybox
+#   command: ['sh', '-c', 'echo "Hello, World!"']
+
+# -- Configure hostAliases
+# </br> Ref: https://kubernetes.io/docs/tasks/network/customize-hosts-file-for-pods/
+hostAliases: []
 
 # -- Configure args
 # </br> Ref: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/
 args: []
-  # - -c
-  # - echo "Hello, World!"
+# - -c
+# - echo "Hello, World!"
 
 # -- Configure command
 # </br> Ref: https://kubernetes.io/docs/tasks/inject-data-application/define-command-argument-container/
 command: []
-  # - echo
-  # - "Hello, World!"
+# - echo
+# - "Hello, World!"
 
 # -- Kubernetes service to expose Pod
 # </br> Ref: https://kubernetes.io/docs/concepts/services-networking/service/
 service:
-  # -- Kubernetes Service type. Allowed values: NodePort, LoadBalancer or ClusterIP
+  # -- Kubernetes Service type. Allowed values: NodePort, LoadBalancer, ClusterIP, ExternalName
   type: ClusterIP
   # -- Kubernetes Service port
-  port: 8080
-  # -- Kubernetes Service health check path
-  # healthPath: ""
-  # -- NodePort port (only when type is NodePort)
-  # nodePort: 32000
+  port: 80
   # -- Pod expose port
-  # targetPort: 8080
+  targetPort: 8080
+  # -- Protocol for the service port
+  protocol: TCP
+  # -- Name for the service port
+  portName: http
+  # -- Application protocol (HTTP, HTTPS, etc.)
+  appProtocol: HTTP
+  # -- NodePort port (only when type is NodePort or LoadBalancer)
+  # nodePort: 32000
+  # -- Specific cluster IP (use "None" for headless service)
+  # clusterIP: "10.96.0.1"
+  # -- List of cluster IPs for dual-stack
+  # clusterIPs:
+  #   - "10.96.0.1"
+  #   - "fd00::1"
+  # -- External IPs for the service
+  # externalIPs:
+  #   - "192.168.1.100"
+  # -- LoadBalancer specific configuration
+  loadBalancer: {}
+  # -- LoadBalancer IP (only for LoadBalancer type)
+  # ip: "192.168.1.100"
+  # -- LoadBalancer source ranges (CIDR blocks)
+  # sourceRanges:
+  #   - "10.0.0.0/8"
+  #   - "172.16.0.0/12"
+  # -- LoadBalancer class
+  # class: "nginx"
+  # -- Allocate NodePorts for LoadBalancer service
+  # allocateNodePorts: true
+  # -- External name for ExternalName type service
+  # externalName: "example.com"
+  # -- External traffic policy (Local or Cluster)
+  # externalTrafficPolicy: Local
+  # -- Internal traffic policy (Local or Cluster)
+  # internalTrafficPolicy: Local
+  # -- Health check node port (for LoadBalancer with externalTrafficPolicy: Local)
+  # healthCheckNodePort: 30000
+  # -- Publish not ready addresses
+  # publishNotReadyAddresses: false
+  # -- Session affinity (None or ClientIP)
+  # sessionAffinity: ClientIP
+  # -- Session affinity configuration
+  # sessionAffinityConfig:
+  #   clientIP:
+  #     timeoutSeconds: 10800
+  # -- IP families (IPv4, IPv6)
+  # ipFamilies:
+  #   - IPv4
+  #   - IPv6
+  # -- IP family policy (SingleStack, PreferDualStack, RequireDualStack)
+  # ipFamilyPolicy: SingleStack
+  # -- Traffic distribution (PreferClose)
+  # trafficDistribution: PreferClose
+  # -- Additional labels for the service
+  labels: {}
+  #  environment: production
+  #  team: platform
+  # -- Annotations for the service
+  annotations: {}
+  #   service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+  #   service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp"
+  #   nginx.ingress.kubernetes.io/service-upstream: "true"
+  # -- Pod extra ports
+  extraPorts: []
+  #  - name: admin
+  #    port: 9090
+  #    targetPort: 9090
+  #    protocol: TCP
+  #    appProtocol: HTTP
+  #    nodePort: 32001  # Only for NodePort/LoadBalancer
+  #  - name: grpc
+  #    port: 9000
+  #    targetPort: 9000
+  #    protocol: TCP
+  #    appProtocol: GRPC
 
 # -- NetworkPolicy configuration
 # </br> Ref: https://kubernetes.io/docs/concepts/services-networking/network-policies/
@@ -137,38 +218,38 @@ networkPolicy:
   enabled: false
   # -- Policy types
   policyTypes: []
-    # - Ingress
-    # - Egress
+  # - Ingress
+  # - Egress
   ingress: []
-    # - from:
-    #   - ipBlock:
-    #       cidr: 172.17.0.0/16
-    #       except:
-    #       - 172.17.1.0/24
-    #   - namespaceSelector:
-    #       matchLabels:
-    #         project: myproject
-    #   - podSelector:
-    #       matchLabels:
-    #         role: frontend
-    #   ports:
-    #   - protocol: TCP
-    #     port: 6379
+  # - from:
+  #   - ipBlock:
+  #       cidr: 172.17.0.0/16
+  #       except:
+  #       - 172.17.1.0/24
+  #   - namespaceSelector:
+  #       matchLabels:
+  #         project: myproject
+  #   - podSelector:
+  #       matchLabels:
+  #         role: frontend
+  #   ports:
+  #   - protocol: TCP
+  #     port: 6379
   egress: []
-    # - to:
-    #   - ipBlock:
-    #       cidr: 10.0.0.0/24
-    #   ports:
-    #   - protocol: TCP
-    #     port: 5978
+  # - to:
+  #   - ipBlock:
+  #       cidr: 10.0.0.0/24
+  #   ports:
+  #   - protocol: TCP
+  #     port: 5978
 
 # -- Configure lifecycle hooks
 # </br> Ref: https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/
 # </br> Ref: https://learnk8s.io/graceful-shutdown
 lifecycle: {}
-  # preStop:
-  #   exec:
-  #     command: ["sh", "-c", "sleep 10"]
+# preStop:
+#   exec:
+#     command: ["sh", "-c", "sleep 10"]
 
 # -- Configure Pod termination grace period
 # </br> Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-termination
@@ -186,14 +267,14 @@ livenessProbe:
 
 # -- Custom livenessProbe
 livenessProbeCustom: {}
-  # httpGet:
-  #   path: /dashboard
-  #   port: 4000
-  # failureThreshold: 3
-  # initialDelaySeconds: 200
-  # periodSeconds: 30
-  # successThreshold: 1
-  # timeoutSeconds: 5
+# httpGet:
+#   path: /dashboard
+#   port: 4000
+# failureThreshold: 3
+# initialDelaySeconds: 200
+# periodSeconds: 30
+# successThreshold: 1
+# timeoutSeconds: 5
 
 # -- Configure readinessProbe checker
 # </br> Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-startup-probes
@@ -207,14 +288,14 @@ readinessProbe:
 
 # -- Custom readinessProbe
 readinessProbeCustom: {}
-  # httpGet:
-  #   path: /dashboard
-  #   port: 4000
-  # failureThreshold: 3
-  # initialDelaySeconds: 200
-  # periodSeconds: 30
-  # successThreshold: 1
-  # timeoutSeconds: 5
+# httpGet:
+#   path: /dashboard
+#   port: 4000
+# failureThreshold: 3
+# initialDelaySeconds: 200
+# periodSeconds: 30
+# successThreshold: 1
+# timeoutSeconds: 5
 
 # -- Configure startupProbe checker
 # </br> Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-startup-probes
@@ -228,14 +309,14 @@ startupProbe:
 
 # -- Custom startupProbe
 startupProbeCustom: {}
-  # httpGet:
-  #   path: /dashboard
-  #   port: 4000
-  # failureThreshold: 3
-  # initialDelaySeconds: 200
-  # periodSeconds: 30
-  # successThreshold: 1
-  # timeoutSeconds: 5
+# httpGet:
+#   path: /dashboard
+#   port: 4000
+# failureThreshold: 3
+# initialDelaySeconds: 200
+# periodSeconds: 30
+# successThreshold: 1
+# timeoutSeconds: 5
 
 # -- Configure annotations on Deployment
 annotations: {}
@@ -253,18 +334,18 @@ podLabels: {}
 # </br> Ref: https://kubernetes.io/docs/concepts/security/pod-security-standards/
 # </br> Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
 podSecurityContext: {}
-  # fsGroup: 2000
+# fsGroup: 2000
 
 # -- Defines privilege and access control settings for a Container
 # </br> Ref: https://kubernetes.io/docs/concepts/security/pod-security-standards/
 # </br> Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
 securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
+# capabilities:
+#   drop:
+#   - ALL
+# readOnlyRootFilesystem: true
+# runAsNonRoot: true
+# runAsUser: 1000
 
 # -- Ingress configuration to expose app
 # </br> Ref: https://kubernetes.io/docs/concepts/services-networking/ingress/
@@ -272,8 +353,8 @@ ingress:
   enabled: false
   className: ""
   annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
+  # kubernetes.io/ingress.class: nginx
+  # kubernetes.io/tls-acme: "true"
   hosts:
     - host: chart-example.local
       paths:
@@ -287,12 +368,12 @@ ingress:
 # -- Resources limits and requested
 # </br> Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
 resources: {}
-  # limits:
-  #   cpu: "1500m"
-  #   memory: 2048Mi
-  # requests:
-  #   cpu: 1
-  #   memory: 256Mi
+# limits:
+#   cpu: "1500m"
+#   memory: 2048Mi
+# requests:
+#   cpu: 1
+#   memory: 256Mi
 
 # -- Pod Disruption Budget
 # </br> Ref: https://kubernetes.io/docs/reference/kubernetes-api/policy-resources/pod-disruption-budget-v1/
@@ -300,7 +381,6 @@ podDisruptionBudget:
   enabled: false
   maxUnavailable: 1
   minAvailable:
-
 # -- Autoscaling with CPU or memory utilization percentage
 # </br> Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
 autoscaling:
@@ -365,10 +445,10 @@ persistentVolume:
   # Useful if Persistent Volumes have been provisioned in advance
   # </br> Ref: https://kubernetes.io/docs/concepts/storage/persistent-volumes/#selector
   selector: {}
-    # matchLabels:
-    #   release: "stable"
-    # matchExpressions:
-    #   - { key: environment, operator: In, values: [ dev ] }
+  # matchLabels:
+  #   release: "stable"
+  # matchExpressions:
+  #   - { key: environment, operator: In, values: [ dev ] }
 
   # -- Persistent Volume Name
   # Useful if Persistent Volumes have been provisioned in advance and you want to use a specific one
@@ -393,11 +473,41 @@ topologySpreadConstraints: []
 #   topologyKey: zone
 #   whenUnsatisfied: DoNotSchedule
 
-# -- CronJob configuration
+# -- Configure DNS
+# </br> Ref: https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/
+dnsConfig: {}
+# nameservers:
+#   - 1.2.3.4
+#   - 5.6.7.8
+# searches:
+#   - ns1.svc.cluster.local
+#   - my.dns.search.suffix
+# option:
+#   - name: ndots
+#     value: "2"
+#   - name: edns0
+#   - name: timeout
+#     value: "3"
+
+# -- Configure DNS policy
+# Options: ClusterFirst, Default, ClusterFirstWithHostNet, None
+# </br> Ref: https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/
+dnsPolicy: ClusterFirst
+
+# -- CronJob configuration (also used by initial Job if enabled)
 # </br> Ref: https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/
 job:
   # -- Enable or disable the cronjob
   enabled: true
+
+  # -- Enable or disable the initial job
+  initialJob: true
+
+  # -- Image configuration for the job
+  image:
+    repository: robustadev/krr
+    tag: v1.27.0
+    pullPolicy: IfNotPresent
 
   # -- The schedule in Cron format
   schedule: "0 0 * * *"
@@ -441,23 +551,23 @@ job:
   # -- Termination grace period in seconds
   terminationGracePeriodSeconds: 30
 
-  # -- Image configuration for the job
-  image:
-    repository: robustadev/krr
-    tag: v1.23.0
-    pullPolicy: IfNotPresent
-
   # -- Arguments for the job container
   args: []
 
   # -- Command for the job container
   command: ["/bin/bash", "-c"]
 
-  # -- Environment variables for the job
+  # -- Environment variables to configure the job
   env: {}
 
-  # -- Environment variables from secrets
+  # -- Variables from configMap
+  envFromConfigMap: {}
+
+  # -- Variables from secrets
   envFromSecrets: {}
+
+  # -- Variables from files managed by you
+  envFromFiles: []
 
   # -- Resource limits and requests for the job
   resources: {}
@@ -488,3 +598,9 @@ job:
 
   # -- Pod labels for the job
   podLabels: {}
+
+  # -- Configure DNS
+  dnsConfig: {}
+
+  # -- Configure DNS policy
+  dnsPolicy: ClusterFirst

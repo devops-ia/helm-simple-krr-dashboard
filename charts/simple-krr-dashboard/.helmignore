@@ -21,3 +21,10 @@
 .idea/
 *.tmproj
 .vscode/
+*.gotmpl
+*.tgz
+Chart.lock
+ci
+examples/
+values.schema.json
+artifacthub-repo.yml

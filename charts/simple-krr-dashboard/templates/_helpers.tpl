@@ -51,32 +51,6 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
-Ref: https://github.com/aws/karpenter-provider-aws/blob/main/charts/karpenter/templates/_helpers.tpl
-Patch the label selector on an object
-This template will add a labelSelector using matchLabels to the object referenced at _target if there is no labelSelector specified.
-The matchLabels are created with the selectorLabels template.
-This works because Helm treats dictionaries as mutable objects and allows passing them by reference.
-*/}}
-{{- define "simple-krr-dashboard.patchSelectorLabels" -}}
-{{- if not (hasKey ._target "labelSelector") }}
-{{- $selectorLabels := (include "simple-krr-dashboard.selectorLabels" .) | fromYaml }}
-{{- $_ := set ._target "labelSelector" (dict "matchLabels" $selectorLabels) }}
-{{- end }}
-{{- end }}
-
-{{/*
-Ref: https://github.com/aws/karpenter-provider-aws/blob/main/charts/karpenter/templates/_helpers.tpl
-Patch topology spread constraints
-This template uses the simple-krr-dashboard.selectorLabels template to add a labelSelector to topologySpreadConstraints if one isn't specified.
-This works because Helm treats dictionaries as mutable objects and allows passing them by reference.
-*/}}
-{{- define "simple-krr-dashboard.patchTopologySpreadConstraints" -}}
-{{- range $constraint := .Values.topologySpreadConstraints }}
-{{- include "simple-krr-dashboard.patchSelectorLabels" (merge (dict "_target" $constraint (include "simple-krr-dashboard.selectorLabels" $)) $) }}
-{{- end }}
-{{- end }}
-
-{{/*
 Create the name of the service account to use
 */}}
 {{- define "simple-krr-dashboard.serviceAccountName" -}}

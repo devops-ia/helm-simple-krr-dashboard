@@ -60,6 +60,11 @@ spec:
             - name: http
               containerPort: {{ .Values.service.targetPort | default .Values.service.port }}
               protocol: TCP
+            {{- range $port := .Values.service.extraPorts }}
+            - name: {{ $port.name }}
+              containerPort: {{ $port.targetPort }}
+              protocol: TCP
+            {{- end }}
           {{- with .Values.lifecycle }}
           lifecycle:
             {{- toYaml . | nindent 12 }}

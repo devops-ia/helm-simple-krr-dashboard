@@ -75,6 +75,7 @@ helm show values simple-krr-dashboard/simple-krr-dashboard
 | envFromConfigMap | object | `{}` | Variables from configMap |
 | envFromFiles | list | `[]` | Variables from files managed by you </br> Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/#configure-all-key-value-pairs-in-a-configmap-as-container-environment-variables |
 | envFromSecrets | object | `{}` | Variables from secrets |
+| extraObjects | list | `[]` | Extra Kubernetes manifests to deploy |
 | fullnameOverride | string | `""` | String to fully override simple-krr-dashboard.fullname template |
 | hostAliases | list | `[]` | Configure hostAliases </br> Ref: https://kubernetes.io/docs/tasks/network/customize-hosts-file-for-pods/ |
 | image | object | `{"pullPolicy":"IfNotPresent","repository":"ghcr.io/devops-ia/simple-krr-dashboard","tag":""}` | Image registry The image configuration for the base service |

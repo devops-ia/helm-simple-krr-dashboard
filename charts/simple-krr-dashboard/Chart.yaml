@@ -1,5 +1,6 @@
 apiVersion: v2
 name: simple-krr-dashboard
+icon: https://cdn.prod.website-files.com/633e9bac8f71dfb7a8e4c9a6/646be7710db810b14133bdb5_logo.svg
 description: A Helm chart to deploy Simple KRR Dashboard
 type: application
 maintainers:

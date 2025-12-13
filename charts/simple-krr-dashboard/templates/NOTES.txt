@@ -1,34 +1,95 @@
-Thank you for installing {{ .Chart.Name }}.
+Release Name: {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+Chart: {{ .Chart.Name }} v{{ .Chart.Version }}
+App Version: {{ .Chart.AppVersion }}
 
-Your release is named {{ .Release.Name }}.
+#####################
+# DEPLOYMENT STATUS #
+#####################
 
-To get Simple KRR Dashboard's status, run:
-  kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "simple-krr-dashboard.name" . }},app.kubernetes.io/instance={{ .Release.Name }}"
+To verify the deployment status, run:
+  kubectl get pods -n {{ .Release.Namespace }} -l "app.kubernetes.io/instance={{ .Release.Name }}"
 
-To access the Simple KRR Dashboard UI:
+To monitor the pods in real-time:
+  kubectl get pods -n {{ .Release.Namespace }} -l "app.kubernetes.io/instance={{ .Release.Name }}" --watch
+
+###########################
+# ACCESSING THE DASHBOARD #
+###########################
 {{- if .Values.ingress.enabled }}
+
+The dashboard is accessible via Ingress at:
 {{- range $host := .Values.ingress.hosts }}
   {{- range .paths }}
   http{{ if $.Values.ingress.tls }}s{{ end }}://{{ $host.host }}{{ .path }}
   {{- end }}
 {{- end }}
 {{- else if contains "NodePort" .Values.service.type }}
-  export NODE_PORT=$(kubectl get --namespace {{ .Release.Namespace }} -o jsonpath="{.spec.ports[0].nodePort}" services {{ include "simple-krr-dashboard.fullname" . }})
-  export NODE_IP=$(kubectl get nodes --namespace {{ .Release.Namespace }} -o jsonpath="{.items[0].status.addresses[0].address}")
-  echo http://$NODE_IP:$NODE_PORT
+
+The dashboard is accessible via NodePort. To access it:
+  export NODE_PORT=$(kubectl get svc -n {{ .Release.Namespace }} {{ include "simple-krr-dashboard.fullname" . }} -o jsonpath='{.spec.ports[0].nodePort}')
+  export NODE_IP=$(kubectl get nodes -n {{ .Release.Namespace }} -o jsonpath='{.items[0].status.addresses[0].address}')
+  echo "Access dashboard at: http://${NODE_IP}:${NODE_PORT}"
 {{- else if contains "LoadBalancer" .Values.service.type }}
-     NOTE: It may take a few minutes for the LoadBalancer IP to be available.
-           You can watch its status by running 'kubectl get --namespace {{ .Release.Namespace }} svc -w {{ include "simple-krr-dashboard.fullname" . }}'
-  export SERVICE_IP=$(kubectl get svc --namespace {{ .Release.Namespace }} {{ include "simple-krr-dashboard.fullname" . }} --template "{{"{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}"}}")
-  echo http://$SERVICE_IP:{{ .Values.service.port }}
-{{- else if contains "ClusterIP" .Values.service.type }}
-  export POD_NAME=$(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "simple-krr-dashboard.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
-  echo "Visit http://127.0.0.1:9090 to use Simple KRR Dashboard UI"
-  kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 9090:9090
+
+The dashboard is accessible via LoadBalancer. Note that it may take a few minutes for the external IP to be provisioned.
+  kubectl get svc -n {{ .Release.Namespace }} {{ include "simple-krr-dashboard.fullname" . }} --watch
+  export SERVICE_IP=$(kubectl get svc -n {{ .Release.Namespace }} {{ include "simple-krr-dashboard.fullname" . }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+  echo "Access dashboard at: http://${SERVICE_IP}:{{ .Values.service.port }}"
+{{- else }}
+
+The dashboard is accessible via port-forward (ClusterIP service):
+  export POD_NAME=$(kubectl get pods -n {{ .Release.Namespace }} -l "app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath='{.items[0].metadata.name}')
+  kubectl port-forward -n {{ .Release.Namespace }} ${POD_NAME} {{ .Values.service.port }}:{{ .Values.service.port }}
+
+Then open: http://localhost:{{ .Values.service.port }}
 {{- end }}
 
-For more information about Simple KRR Dashboard usage and configuration, please visit:
-https://github.com/linkedin/simple-krr-dashboard
+#####################
+# JOB CONFIGURATION #
+#####################
+{{- if .Values.job.enabled }}
 
-To check the logs of the Simple KRR Dashboard pod:
-  kubectl logs -f --namespace {{ .Release.Namespace }} $(kubectl get pods --namespace {{ .Release.Namespace }} -l "app.kubernetes.io/name={{ include "simple-krr-dashboard.name" . }},app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath="{.items[0].metadata.name}")
+CronJob Monitoring:
+  The CronJob is enabled and will execute on schedule: {{ .Values.job.schedule }}
+  To view scheduled job executions:
+    kubectl get cronjobs -n {{ .Release.Namespace }} -l "app.kubernetes.io/instance={{ .Release.Name }}"
+  To view job execution history:
+    kubectl get jobs -n {{ .Release.Namespace }} -l "app.kubernetes.io/instance={{ .Release.Name }}"
+{{- else }}
+
+CronJob Monitoring:
+  The CronJob is currently disabled. Enable it by setting job.enabled: true
+{{- end }}
+
+{{- if .Values.job.initialJob }}
+
+Initial Job:
+  An initial job will run on first deployment to generate the baseline KRR report.
+  Monitor its progress with:
+    kubectl get jobs -n {{ .Release.Namespace }} -l "app.kubernetes.io/instance={{ .Release.Name }}" --sort-by=.metadata.creationTimestamp
+{{- end }}
+
+############################
+# LOGS AND TROUBLESHOOTING #
+############################
+
+View application logs:
+  kubectl logs -n {{ .Release.Namespace }} -l "app.kubernetes.io/instance={{ .Release.Name }}" -f
+
+View job logs:
+  kubectl logs -n {{ .Release.Namespace }} -l "job-name={{ include "simple-krr-dashboard.fullname" . }}-get-krr-report" -f
+
+Describe pod for events and status:
+  export POD_NAME=$(kubectl get pods -n {{ .Release.Namespace }} -l "app.kubernetes.io/instance={{ .Release.Name }}" -o jsonpath='{.items[0].metadata.name}')
+  kubectl describe pod -n {{ .Release.Namespace }} ${POD_NAME}
+
+#################
+# CONFIGURATION #
+#################
+
+For configuration details, environment variables, and usage instructions:
+  https://github.com/linkedin/simple-krr-dashboard
+
+Current Helm Values:
+  kubectl get secret -n {{ .Release.Namespace }} {{ .Release.Name }} -o jsonpath='{.data.values\.yaml}' | base64 -d | head -50

@@ -15,6 +15,10 @@ spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
+  {{- with .Values.strategy }}
+  strategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
   selector:
     matchLabels:
       {{- include "simple-krr-dashboard.selectorLabels" . | nindent 6 }}
@@ -41,6 +45,10 @@ spec:
       {{- with .Values.initContainers }}
       initContainers:
           {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.hostAliases }}
+      hostAliases:
+        {{- toYaml . | nindent 8 }}
       {{- end }}
       containers:
         - name: {{ .Chart.Name }}
@@ -110,6 +118,10 @@ spec:
             - name: APP_VERSION
               value: {{ .Chart.AppVersion | quote }}
             {{- $_ := set $envList "APP_NAME" true }}
+            - name: GUNICORN_BIND
+              value: "0.0.0.0:{{ .Values.service.targetPort | default .Values.service.port }}"
+            {{- $_ := set $envList "GUNICORN_BIND" true }}
+            # Variables from secrets have precedence
             {{- if .Values.envFromSecrets }}
             {{- range $key, $value := .Values.envFromSecrets }}
             {{- if not (hasKey $envList $key) }}
@@ -172,4 +184,11 @@ spec:
       {{- $_ := include "simple-krr-dashboard.patchTopologySpreadConstraints" $ }}
       topologySpreadConstraints:
         {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.dnsConfig }}
+      dnsConfig:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.dnsPolicy }}
+      dnsPolicy: {{ . }}
       {{- end }}

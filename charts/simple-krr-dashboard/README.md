@@ -82,7 +82,7 @@ helm show values simple-krr-dashboard/simple-krr-dashboard
 | imagePullSecrets | list | `[]` | Docker registry secret names as an array |
 | ingress | object | `{"annotations":{},"className":"","enabled":false,"hosts":[{"host":"chart-example.local","paths":[{"path":"/","pathType":"ImplementationSpecific"}]}],"tls":[]}` | Ingress configuration to expose app </br> Ref: https://kubernetes.io/docs/concepts/services-networking/ingress/ |
 | initContainers | list | `[]` | Configure additional containers </br> Ref: https://kubernetes.io/docs/concepts/workloads/pods/init-containers/ |
-| job | object | `{"affinity":{},"annotations":{},"args":[],"backoffLimit":1,"backoffLimitPerIndex":1,"command":["/bin/bash","-c"],"completionMode":"Indexed","completions":1,"concurrencyPolicy":"Forbid","dnsConfig":{},"dnsPolicy":"ClusterFirst","enabled":true,"env":{},"envFromConfigMap":{},"envFromFiles":[],"envFromSecrets":{},"failedJobsHistoryLimit":1,"image":{"pullPolicy":"IfNotPresent","repository":"robustadev/krr","tag":"v1.27.0"},"initialJob":true,"krrExtraArguments":"","kubectlVersion":"stable","labels":{},"maxFailedIndexes":1,"nodeSelector":{},"parallelism":1,"podAnnotations":{},"podLabels":{},"resources":{},"restartPolicy":"Never","schedule":"0 0 * * *","successfulJobsHistoryLimit":1,"terminationGracePeriodSeconds":30,"tolerations":[],"volumeMounts":[],"volumes":[]}` | CronJob configuration (also used by initial Job if enabled) </br> Ref: https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/ |
+| job | object | `{"affinity":{},"annotations":{},"args":[],"backoffLimit":1,"backoffLimitPerIndex":1,"command":["/bin/bash","-c"],"completionMode":"Indexed","completions":1,"concurrencyPolicy":"Forbid","dnsConfig":{},"dnsPolicy":"ClusterFirst","enabled":true,"env":{},"envFromConfigMap":{},"envFromFiles":[],"envFromSecrets":{},"failedJobsHistoryLimit":1,"image":{"pullPolicy":"IfNotPresent","repository":"robustadev/krr","tag":"v1.28.0"},"initialJob":true,"krrExtraArguments":"","kubectlVersion":"stable","labels":{},"maxFailedIndexes":1,"nodeSelector":{},"parallelism":1,"podAnnotations":{},"podLabels":{},"resources":{},"restartPolicy":"Never","schedule":"0 0 * * *","successfulJobsHistoryLimit":1,"terminationGracePeriodSeconds":30,"tolerations":[],"volumeMounts":[],"volumes":[]}` | CronJob configuration (also used by initial Job if enabled) </br> Ref: https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/ |
 | job.affinity | object | `{}` | Affinity for the job |
 | job.annotations | object | `{}` | Annotations for the job |
 | job.args | list | `[]` | Arguments for the job container |
@@ -100,7 +100,7 @@ helm show values simple-krr-dashboard/simple-krr-dashboard
 | job.envFromFiles | list | `[]` | Variables from files managed by you |
 | job.envFromSecrets | object | `{}` | Variables from secrets |
 | job.failedJobsHistoryLimit | int | `1` | Number of failed jobs to keep |
-| job.image | object | `{"pullPolicy":"IfNotPresent","repository":"robustadev/krr","tag":"v1.27.0"}` | Image configuration for the job |
+| job.image | object | `{"pullPolicy":"IfNotPresent","repository":"robustadev/krr","tag":"v1.28.0"}` | Image configuration for the job |
 | job.initialJob | bool | `true` | Enable or disable the initial job |
 | job.kubectlVersion | string | `"stable"` | Version of kubectl to install (use "stable" for latest stable version) |
 | job.labels | object | `{}` | Labels for the job |

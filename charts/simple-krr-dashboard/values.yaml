@@ -58,10 +58,24 @@ testConnection:
 # </br> Ref: https://github.com/devops-ia/simple-krr-dashboard?tab=readme-ov-file#environment-variables
 env: {}
 # APP_NAME: "Simple KRR Dashboard"
+# APP_ROOT: "/"
 # KUBERNETES_CLUSTER_NAME: None
 # KUBERNETES_DASHBOARD_CSV_PATH: "/reports/report.table.csv"
 # LOG_FORMAT: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 # LOG_LEVEL: INFO
+# LOG_OUTPUT_FORMAT: logfmt
+# DISABLE_HTTP_LOGS: "false"
+# GUNICORN_BIND: "0.0.0.0:8080"
+# GUNICORN_WORKERS: "2"
+# GUNICORN_THREADS: "4"
+# GUNICORN_WORKER_CLASS: gthread
+# GUNICORN_WORKER_TMP_DIR: /dev/shm
+# GUNICORN_TIMEOUT: "30"
+# GUNICORN_GRACEFUL_TIMEOUT: "30"
+# GUNICORN_KEEPALIVE: "5"
+# GUNICORN_LOG_LEVEL: error
+# GUNICORN_ACCESS_LOG: "-"
+# GUNICORN_ERROR_LOG: "-"
 
 # -- Variables from configMap
 envFromConfigMap: {}
@@ -506,7 +520,7 @@ job:
   # -- Image configuration for the job
   image:
     repository: robustadev/krr
-    tag: v1.27.0
+    tag: v1.28.0
     pullPolicy: IfNotPresent
 
   # -- The schedule in Cron format

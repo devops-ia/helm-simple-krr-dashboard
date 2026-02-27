@@ -282,7 +282,7 @@ livenessProbe:
 # -- Custom livenessProbe
 livenessProbeCustom: {}
 # httpGet:
-#   path: /dashboard
+#   path: /healthz
 #   port: 4000
 # failureThreshold: 3
 # initialDelaySeconds: 200
@@ -303,7 +303,7 @@ readinessProbe:
 # -- Custom readinessProbe
 readinessProbeCustom: {}
 # httpGet:
-#   path: /dashboard
+#   path: /healthz
 #   port: 4000
 # failureThreshold: 3
 # initialDelaySeconds: 200
@@ -324,7 +324,7 @@ startupProbe:
 # -- Custom startupProbe
 startupProbeCustom: {}
 # httpGet:
-#   path: /dashboard
+#   path: /healthz
 #   port: 4000
 # failureThreshold: 3
 # initialDelaySeconds: 200

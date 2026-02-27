@@ -24,7 +24,7 @@ jobs:
           echo "current_release=$current_release" >> $GITHUB_OUTPUT
 
       - name: Install updatecli
-        uses: updatecli/updatecli-action@4fd2c16d992120bd5355264a03ad0cddec013e1b # v2.99.0
+        uses: updatecli/updatecli-action@4b17f4ea784de29f71f85f9bc4955402ba1ae53c # v2.100.0
 
       - name: Update dependencies
         run: |
@@ -65,7 +65,7 @@ jobs:
           signoff: false
           branch: chore/upgrade-simple-krr-dashboard-${{ steps.latest_release.outputs.latest_release }}
           delete-branch: true
-          title: '[simple-krr-dashboard] new release: ${{ steps.latest_release.outputs.latest_release }}'
+          title: 'fix: new release ${{ steps.latest_release.outputs.latest_release }}'
           body: |
             Simple KRR Dashboard version:
             - :information_source: Current: `${{ steps.current_release.outputs.current_release }}`

@@ -1,0 +1,16 @@
+name: Release Helm Chart (single)
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "charts/simple-krr-dashboard/**"
+
+jobs:
+  release:
+    uses: devops-ia/.github/.github/workflows/helm-release.yml@main
+    with:
+      chart_name: simple-krr-dashboard
+      charts_dir: charts

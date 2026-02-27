@@ -10,6 +10,8 @@ on:
 
 jobs:
   release:
+    permissions:
+      contents: read
     uses: devops-ia/.github/.github/workflows/helm-release.yml@main
     with:
       chart_name: simple-krr-dashboard

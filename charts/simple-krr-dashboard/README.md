@@ -82,9 +82,9 @@ helm show values simple-krr-dashboard/simple-krr-dashboard
 | imagePullSecrets | list | `[]` | Docker registry secret names as an array |
 | ingress | object | `{"annotations":{},"className":"","enabled":false,"hosts":[{"host":"chart-example.local","paths":[{"path":"/","pathType":"ImplementationSpecific"}]}],"tls":[]}` | Ingress configuration to expose app </br> Ref: https://kubernetes.io/docs/concepts/services-networking/ingress/ |
 | initContainers | list | `[]` | Configure additional containers </br> Ref: https://kubernetes.io/docs/concepts/workloads/pods/init-containers/ |
-| job | object | `{"affinity":{},"annotations":{},"args":[],"backoffLimit":1,"backoffLimitPerIndex":1,"command":["/bin/bash","-c"],"completionMode":"Indexed","completions":1,"concurrencyPolicy":"Forbid","dnsConfig":{},"dnsPolicy":"ClusterFirst","enabled":true,"env":{},"envFromConfigMap":{},"envFromFiles":[],"envFromSecrets":{},"failedJobsHistoryLimit":1,"image":{"pullPolicy":"IfNotPresent","repository":"robustadev/krr","tag":"v1.28.0"},"initialJob":true,"krrExtraArguments":"","kubectlVersion":"stable","labels":{},"maxFailedIndexes":1,"nodeSelector":{},"parallelism":1,"podAnnotations":{},"podLabels":{},"resources":{},"restartPolicy":"Never","schedule":"0 0 * * *","successfulJobsHistoryLimit":1,"terminationGracePeriodSeconds":30,"tolerations":[],"volumeMounts":[],"volumes":[]}` | CronJob configuration (also used by initial Job if enabled) </br> Ref: https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/ |
+| job | object | `{"affinity":{},"annotations":{"helm.sh/hook":"post-install,post-upgrade","helm.sh/hook-delete-policy":"before-hook-creation,hook-succeeded","helm.sh/hook-weight":"1"},"args":[],"backoffLimit":1,"backoffLimitPerIndex":1,"command":["/bin/bash","-c"],"completionMode":"Indexed","completions":1,"concurrencyPolicy":"Forbid","cronJobAnnotations":{},"dnsConfig":{},"dnsPolicy":"ClusterFirst","enabled":true,"env":{},"envFromConfigMap":{},"envFromFiles":[],"envFromSecrets":{},"failedJobsHistoryLimit":1,"image":{"pullPolicy":"IfNotPresent","repository":"robustadev/krr","tag":"v1.28.0"},"initialJob":true,"krrExtraArguments":"","kubectlInitContainer":{"image":{"pullPolicy":"IfNotPresent","repository":"alpine/kubectl","tag":"1.35.2"}},"labels":{},"maxFailedIndexes":1,"nodeSelector":{},"parallelism":1,"podAnnotations":{},"podLabels":{},"podSecurityContext":{},"resources":{},"restartPolicy":"Never","schedule":"0 0 * * *","securityContext":{},"successfulJobsHistoryLimit":1,"terminationGracePeriodSeconds":30,"tolerations":[],"volumeMounts":[],"volumes":[]}` | CronJob configuration (also used by initial Job if enabled) </br> Ref: https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/ |
 | job.affinity | object | `{}` | Affinity for the job |
-| job.annotations | object | `{}` | Annotations for the job |
+| job.annotations | object | `{"helm.sh/hook":"post-install,post-upgrade","helm.sh/hook-delete-policy":"before-hook-creation,hook-succeeded","helm.sh/hook-weight":"1"}` | Annotations for the initial Job (Helm hook lifecycle only) |
 | job.args | list | `[]` | Arguments for the job container |
 | job.backoffLimit | int | `1` | Number of retries before marking job as failed |
 | job.backoffLimitPerIndex | int | `1` | Number of retries per index before marking job as failed |
@@ -92,6 +92,7 @@ helm show values simple-krr-dashboard/simple-krr-dashboard
 | job.completionMode | string | `"Indexed"` | Completion mode for the job |
 | job.completions | int | `1` | Number of completions required for the job |
 | job.concurrencyPolicy | string | `"Forbid"` | Concurrency policy for the cronjob |
+| job.cronJobAnnotations | object | `{}` | Annotations for the CronJob (regular resource, no hook annotations) |
 | job.dnsConfig | object | `{}` | Configure DNS |
 | job.dnsPolicy | string | `"ClusterFirst"` | Configure DNS policy |
 | job.enabled | bool | `true` | Enable or disable the cronjob |
@@ -102,16 +103,18 @@ helm show values simple-krr-dashboard/simple-krr-dashboard
 | job.failedJobsHistoryLimit | int | `1` | Number of failed jobs to keep |
 | job.image | object | `{"pullPolicy":"IfNotPresent","repository":"robustadev/krr","tag":"v1.28.0"}` | Image configuration for the job |
 | job.initialJob | bool | `true` | Enable or disable the initial job |
-| job.kubectlVersion | string | `"stable"` | Version of kubectl to install (use "stable" for latest stable version) |
+| job.kubectlInitContainer | object | `{"image":{"pullPolicy":"IfNotPresent","repository":"alpine/kubectl","tag":"1.35.2"}}` | Init container that provides kubectl to the job container via a shared volume. The KRR image (robustadev/krr) does not ship kubectl, so this init container is required for the default args to work. Use the image tag to pin a specific kubectl version for compatibility with your Kubernetes server version (ref: Dockerfile FROM alpine/kubectl). |
 | job.labels | object | `{}` | Labels for the job |
 | job.maxFailedIndexes | int | `1` | Maximum number of failed indexes |
 | job.nodeSelector | object | `{}` | Node selector for the job |
 | job.parallelism | int | `1` | Number of parallel jobs |
 | job.podAnnotations | object | `{}` | Pod annotations for the job |
 | job.podLabels | object | `{}` | Pod labels for the job |
+| job.podSecurityContext | object | `{}` | Defines privilege and access control settings for the job Pod </br> Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/ The init container runs as root (runAsUser: 0) to copy the kubectl binary. Set fsGroup: 1000 to match the krr user in the dashboard image so the emptyDir volume is group-readable without relying on world-execute permissions. |
 | job.resources | object | `{}` | Resource limits and requests for the job |
 | job.restartPolicy | string | `"Never"` | Restart policy for the job |
 | job.schedule | string | `"0 0 * * *"` | The schedule in Cron format |
+| job.securityContext | object | `{}` | Defines privilege and access control settings for the job container </br> Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/ |
 | job.successfulJobsHistoryLimit | int | `1` | Number of successful jobs to keep |
 | job.terminationGracePeriodSeconds | int | `30` | Termination grace period in seconds |
 | job.tolerations | list | `[]` | Tolerations for the job |

@@ -526,8 +526,15 @@ job:
   # -- The schedule in Cron format
   schedule: "0 0 * * *"
 
-  # -- Version of kubectl to install (use "stable" for latest stable version)
-  kubectlVersion: "stable"
+  # -- Init container that provides kubectl to the job container via a shared volume.
+  # The KRR image (robustadev/krr) does not ship kubectl, so this init container is required
+  # for the default args to work. Use the image tag to pin a specific kubectl version for
+  # compatibility with your Kubernetes server version (ref: Dockerfile FROM alpine/kubectl).
+  kubectlInitContainer:
+    image:
+      repository: alpine/kubectl
+      tag: "1.35.2"
+      pullPolicy: IfNotPresent
 
   # -- Extra arguments to pass to krr (eg. `--mem-min 32 --allow-hpa --history-duration 720`)
   krrExtraArguments: ""
@@ -601,8 +608,14 @@ job:
   # -- Affinity for the job
   affinity: {}
 
-  # -- Annotations for the job
-  annotations: {}
+  # -- Annotations for the initial Job (Helm hook lifecycle only)
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: "1"
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+
+  # -- Annotations for the CronJob (regular resource, no hook annotations)
+  cronJobAnnotations: {}
 
   # -- Labels for the job
   labels: {}
@@ -612,6 +625,24 @@ job:
 
   # -- Pod labels for the job
   podLabels: {}
+
+  # -- Defines privilege and access control settings for the job Pod
+  # </br> Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+  # The init container runs as root (runAsUser: 0) to copy the kubectl binary.
+  # Set fsGroup: 1000 to match the krr user in the dashboard image so the emptyDir
+  # volume is group-readable without relying on world-execute permissions.
+  podSecurityContext: {}
+  # fsGroup: 1000
+
+  # -- Defines privilege and access control settings for the job container
+  # </br> Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+  securityContext: {}
+  # allowPrivilegeEscalation: false
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # runAsNonRoot: true
+  # runAsUser: 1000
 
   # -- Configure DNS
   dnsConfig: {}

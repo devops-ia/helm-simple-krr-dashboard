@@ -37,25 +37,39 @@ spec:
       imagePullSecrets:
         {{- toYaml .Values.job.imagePullSecrets | nindent 8 }}
       restartPolicy: {{ .Values.job.restartPolicy | quote }}
+      {{- with .Values.job.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      initContainers:
+      - name: kubectl-provider
+        image: "{{ .Values.job.kubectlInitContainer.image.repository }}:{{ .Values.job.kubectlInitContainer.image.tag }}"
+        imagePullPolicy: {{ .Values.job.kubectlInitContainer.image.pullPolicy | quote }}
+        command: ["cp", "/usr/local/bin/kubectl", "/kubectl-bin/kubectl"]
+        securityContext:
+          runAsUser: 0
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - name: kubectl-bin
+          mountPath: /kubectl-bin
       containers:
       - name: krr
         image: "{{ .Values.job.image.repository }}:{{ .Values.job.image.tag | default "latest" }}"
         imagePullPolicy: {{ .Values.job.image.pullPolicy | quote }}
+        {{- with .Values.job.securityContext }}
+        securityContext:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
         {{- if .Values.job.args }}
         args:
           {{- toYaml .Values.job.args | nindent 10 }}
         {{- else }}
         args:
           - |
-            apt update && \
-            apt install -y curl --no-install-recommends && \
-            {{- if eq .Values.job.kubectlVersion "stable" }}
-            curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" && \
-            {{- else }}
-            curl -LO "https://dl.k8s.io/release/{{ .Values.job.kubectlVersion }}/bin/linux/amd64/kubectl" && \
-            {{- end }}
-            chmod +x kubectl && \
-            mv ./kubectl /usr/local/bin/kubectl && \
+            export PATH="/kubectl-bin:$PATH" && \
             python krr.py simple --fileoutput report.table.csv --use-oomkill-data --formatter csv {{ .Values.job.krrExtraArguments | default "" }} && \
             DASHBOARD_POD=$(kubectl -n {{ .Release.Namespace }} get pods -l app.kubernetes.io/name={{ include "simple-krr-dashboard.fullname" . }} -l helm.sh/chart={{ .Chart.Name }}-{{ .Chart.Version }} -o jsonpath='{.items[0].metadata.name}') && \
             grep -v "initial-job" report.table.csv > report.table.csv.tmp && \
@@ -109,15 +123,19 @@ spec:
           {{- end }}
         resources:
           {{- toYaml .Values.job.resources | nindent 12 }}
-        {{- with .Values.job.volumeMounts }}
         volumeMounts:
+          {{- with .Values.job.volumeMounts }}
           {{- toYaml . | nindent 12 }}
-        {{- end }}
+          {{- end }}
+          - name: kubectl-bin
+            mountPath: /kubectl-bin
       terminationGracePeriodSeconds: {{ .Values.job.terminationGracePeriodSeconds }}
-      {{- with .Values.job.volumes }}
       volumes:
+        {{- with .Values.job.volumes }}
         {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- end }}
+        - name: kubectl-bin
+          emptyDir: {}
       {{- with .Values.job.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

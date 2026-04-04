@@ -22,6 +22,7 @@ spec:
   selector:
     matchLabels:
       {{- include "simple-krr-dashboard.selectorLabels" . | nindent 6 }}
+      deployment: {{ include "simple-krr-dashboard.fullname" . }}
   template:
     metadata:
       annotations:
@@ -31,6 +32,7 @@ spec:
         {{- end }}
       labels:
         {{- include "simple-krr-dashboard.labels" . | nindent 8 }}
+        deployment: {{ include "simple-krr-dashboard.fullname" . }}
         {{- with .Values.podLabels }}
         {{- toYaml . | nindent 8 }}
         {{- end }}

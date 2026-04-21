@@ -3,6 +3,28 @@ entries:
   simple-krr-dashboard:
   - apiVersion: v2
     appVersion: 1.6.0
+    created: "2026-04-21T16:14:19.219215925Z"
+    description: A Helm chart to deploy Simple KRR Dashboard
+    digest: 1656ce197b37e78cb2b6ffd7ce3ddd49f1445324f2b9ff80962d4a70329dcf22
+    home: https://github.com/devops-ia/helm-simple-krr-dashboard
+    icon: https://cdn.prod.website-files.com/633e9bac8f71dfb7a8e4c9a6/646be7710db810b14133bdb5_logo.svg
+    keywords:
+    - simple-krr-dashboard
+    - krr
+    - kubernetes
+    maintainers:
+    - email: hello@ialejandro.rocks
+      name: ialejandro
+      url: https://ialejandro.rocks
+    name: simple-krr-dashboard
+    sources:
+    - https://github.com/devops-ia/simple-krr-dashboard
+    type: application
+    urls:
+    - https://github.com/devops-ia/helm-simple-krr-dashboard/releases/download/v1.5.1/simple-krr-dashboard-1.5.1.tgz
+    version: 1.5.1
+  - apiVersion: v2
+    appVersion: 1.6.0
     created: "2026-03-07T00:07:22.346626297Z"
     description: A Helm chart to deploy Simple KRR Dashboard
     digest: d85ad99937aae3b85d7d8fe22a850f53ff8fb08837bf7446377118a4808e9c45
@@ -217,4 +239,4 @@ entries:
     urls:
     - https://github.com/devops-ia/helm-simple-krr-dashboard/releases/download/v1.0.0/simple-krr-dashboard-1.0.0.tgz
     version: 1.0.0
-generated: "2026-03-07T00:07:22.346679847Z"
+generated: "2026-04-21T16:14:19.219258648Z"

@@ -77,6 +77,16 @@ helm show values simple-krr-dashboard/simple-krr-dashboard
 | envFromSecrets | object | `{}` | Variables from secrets |
 | extraObjects | list | `[]` | Extra Kubernetes manifests to deploy |
 | fullnameOverride | string | `""` | String to fully override simple-krr-dashboard.fullname template |
+| gateway | object | `{"annotations":{},"className":"","create":false,"enabled":false,"filters":[],"hostnames":[],"labels":{},"listeners":[{"name":"http","port":80,"protocol":"HTTP"}],"parentRefs":[{"name":"","namespace":""}],"rules":[{"matches":[{"path":{"type":"PathPrefix","value":"/"}}]}]}` | Gateway API configuration (Gateway + HTTPRoute resources) </br> Ref: https://gateway-api.sigs.k8s.io/ </br> Requires Gateway API CRDs installed in the cluster. </br> TLS is configured at the Gateway listener level, not the HTTPRoute. |
+| gateway.annotations | object | `{}` | Annotations for the HTTPRoute |
+| gateway.className | string | `""` | GatewayClass name — required when create is true |
+| gateway.create | bool | `false` | Set to false to attach to a pre-existing Gateway via parentRefs. |
+| gateway.filters | list | `[]` | Additional request/response filters |
+| gateway.hostnames | list | `[]` | Hostnames to match (leave empty to match all hostnames) |
+| gateway.labels | object | `{}` | Additional labels for the HTTPRoute |
+| gateway.listeners | list | `[{"name":"http","port":80,"protocol":"HTTP"}]` | Gateway listeners — used only when create is true |
+| gateway.parentRefs | list | `[{"name":"","namespace":""}]` | Ignored when create is true (auto-wired to the chart-managed Gateway). |
+| gateway.rules | list | `[{"matches":[{"path":{"type":"PathPrefix","value":"/"}}]}]` | Route rules (backendRefs are auto-generated from service config) |
 | hostAliases | list | `[]` | Configure hostAliases </br> Ref: https://kubernetes.io/docs/tasks/network/customize-hosts-file-for-pods/ |
 | image | object | `{"pullPolicy":"IfNotPresent","repository":"ghcr.io/devops-ia/simple-krr-dashboard","tag":""}` | Image registry The image configuration for the base service |
 | imagePullSecrets | list | `[]` | Docker registry secret names as an array |

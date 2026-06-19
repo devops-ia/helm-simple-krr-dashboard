@@ -16,7 +16,18 @@ To monitor the pods in real-time:
 ###########################
 # ACCESSING THE DASHBOARD #
 ###########################
-{{- if .Values.ingress.enabled }}
+{{- if .Values.gateway.enabled }}
+
+The dashboard is accessible via Gateway API at:
+  {{- if .Values.gateway.hostnames }}
+  {{- range .Values.gateway.hostnames }}
+  {{ . }}
+  {{- end }}
+  {{- else }}
+  (HTTPRoute - no hostnames configured)
+  {{- end }}
+  (Gateway API / HTTPRoute)
+{{- else if .Values.ingress.enabled }}
 
 The dashboard is accessible via Ingress at:
 {{- range $host := .Values.ingress.hosts }}

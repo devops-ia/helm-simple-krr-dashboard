@@ -558,7 +558,7 @@ job:
   # -- Image configuration for the job
   image:
     repository: robustadev/krr
-    tag: v1.29.0
+    tag: v1.30.0
     pullPolicy: IfNotPresent
 
   # -- The schedule in Cron format

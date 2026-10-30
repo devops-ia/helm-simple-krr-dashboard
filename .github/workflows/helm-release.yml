@@ -15,6 +15,7 @@ jobs:
       packages: write
       id-token: write
     uses: devops-ia/.github/.github/workflows/helm-release.yml@main
+    secrets: inherit
     with:
       chart_name: simple-krr-dashboard
       charts_dir: charts
